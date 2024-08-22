@@ -628,8 +628,8 @@ def _do_final_changes(nopatch, image, attr):
 
 
 _ISOS = {
-    "win7x64":("36ae90defbad9d9539e649b193ae573b77a71c83","https://hatching.dev/hatchvm/win7ultimate.iso"),
-    "win10x64": ("ce8005a659e8df7fe9b080352cb1c313c3e9adce", "https://hatching.dev/hatchvm/Win10_1703_English_x64.iso")
+    "win7x64":("36ae90defbad9d9539e649b193ae573b77a71c83","https://cuckoo-hatch.cert.ee/static/vm/win7ultimate.iso"),
+    "win10x64": ("ce8005a659e8df7fe9b080352cb1c313c3e9adce", "https://cuckoo-hatch.cert.ee/static/vm/Win10_1703_English_x64.iso")
 }
 @main.command()
 @click.option("--download-to", help=f"The filepath to write the ISO to. Will go to {iso_dst_path} otherwise.")
