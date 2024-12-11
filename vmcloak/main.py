@@ -21,7 +21,7 @@ from vmcloak.constants import VMCLOAK_ROOT
 from vmcloak.dependencies import Python, ThreemonPatch, Finalize
 from vmcloak.install import DependencyInstaller, InstallError, find_recipe
 from vmcloak.misc import (
-    wait_for_agent, drop_privileges, download_file, filename_from_url
+    wait_for_agent, drop_privileges, download_file, filename_from_url, sha1_file
 )
 from vmcloak.rand import random_string
 from vmcloak.repository import (
@@ -655,6 +655,10 @@ def isodownload(win7x64, win10x64, download_to):
         iso_path = download_to
     else:
         iso_path = os.path.join(conf_path, filename_from_url(url))
+
+    if os.path.exists(iso_path) and expected_sha1 == sha1_file(iso_path):
+        log.info(f"Not downloading, ISO {name} already exists at {iso_path} with expected SHA1 {expected_sha1}")
+        return
 
     log.info(f"Downloading ISO for {name} to {iso_path}")
     success, sha1 = download_file(url, iso_path)
