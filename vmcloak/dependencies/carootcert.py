@@ -10,6 +10,7 @@ from vmcloak.exceptions import DependencyError
 
 log = logging.getLogger(__name__)
 
+
 class CaRootCert(Dependency):
     name = "carootcert"
     files = [
@@ -18,19 +19,19 @@ class CaRootCert(Dependency):
             "urls": ["https://letsencrypt.org/certs/isrgrootx1.der"],
             "sha1": "cabd2a79a1076a31f21d253635cb039d4329a5e8",
             "filename": "isrgrootx1.der",
-            "description": "Let's encrypt CA ISRG root."
+            "description": "Let's encrypt CA ISRG root.",
         },
         {
             # Certificate needed to install some updates and dotnet packages.
             # See https://docs.microsoft.com/en-us/archive/blogs/vsnetsetup/a-certificate-chain-could-not-be-built-to-a-trusted-root-authority-2
             "urls": [
                 "https://hatching.io/hatchvm/MicRooCerAut2011_2011_03_22.crt",
-                "https://www.microsoft.com/pki/certs/MicRooCerAut2011_2011_03_22.crt"
+                "https://www.microsoft.com/pki/certs/MicRooCerAut2011_2011_03_22.crt",
             ],
             "sha1": "8f43288ad272f3103b6fb1428485ea3014c0bcfe",
             "filename": "MicRooCerAut2011_2011_03_22.crt",
-            "description": "Microsoft root certificate"
-        }
+            "description": "Microsoft root certificate",
+        },
     ]
 
     def run(self):
@@ -45,8 +46,7 @@ class CaRootCert(Dependency):
                     f"{ca_cert.get('description')}"
                 )
                 res = self.a.execute(
-                    "c:\\Windows\\System32\\certutil.exe "
-                    f"-addstore root {winpath}"
+                    f"c:\\Windows\\System32\\certutil.exe -addstore root {winpath}"
                 )
                 if res.get("exit_code", 0):
                     raise DependencyError(

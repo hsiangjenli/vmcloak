@@ -11,23 +11,24 @@ from vmcloak.abstract import Dependency
 
 log = logging.getLogger(__name__)
 
+
 class Onemon(Dependency):
     name = "onemon"
     recommended = True
 
     # Disable ntoskrnl validation in winload.
     winload = {
-        0x4ce7929c: 0x4bdc,
+        0x4CE7929C: 0x4BDC,
     }
 
     # Disable PatchGuard initialization.
     ntoskrnl_pg = {
-        0x4ce7951a: 0x4d1568,
+        0x4CE7951A: 0x4D1568,
     }
 
     # Disable Driver Signature Enforcement (driver signing).
     ntoskrnl_ci = {
-        0x4ce7951a: 0x36a8f0,
+        0x4CE7951A: 0x36A8F0,
     }
 
     def patch_winload(self, blob):
@@ -35,12 +36,12 @@ class Onemon(Dependency):
         if pe1.FILE_HEADER.TimeDateStamp not in self.winload:
             log.warning(
                 "Unsupported winload.exe: timestamp 0x%08x",
-                pe1.FILE_HEADER.TimeDateStamp
+                pe1.FILE_HEADER.TimeDateStamp,
             )
             return
 
         off = self.winload[pe1.FILE_HEADER.TimeDateStamp]
-        buf = blob[:off] + "\xb0\x01\xc3\x90" + blob[off+4:]
+        buf = blob[:off] + "\xb0\x01\xc3\x90" + blob[off + 4 :]
 
         pe2 = pefile.PE(data=buf, fast_load=True)
         pe2.OPTIONAL_HEADER.CheckSum = pe2.generate_checksum()
@@ -62,17 +63,17 @@ class Onemon(Dependency):
         if pe1.FILE_HEADER.TimeDateStamp not in self.ntoskrnl_pg:
             log.warning(
                 "Unsupported ntoskrnl.exe: timestamp=0x%08x",
-                pe1.FILE_HEADER.TimeDateStamp
+                pe1.FILE_HEADER.TimeDateStamp,
             )
             return
 
         # Disable PatchGuard initialization.
         off = self.ntoskrnl_pg[pe1.FILE_HEADER.TimeDateStamp]
-        buf = blob[:off] + "\x90\x90" + blob[off+2:]
+        buf = blob[:off] + "\x90\x90" + blob[off + 2 :]
 
         # Always set g_CiEnabled to zero.
         off = self.ntoskrnl_ci[pe1.FILE_HEADER.TimeDateStamp]
-        buf = buf[:off] + "\x00" + buf[off+1:]
+        buf = buf[:off] + "\x00" + buf[off + 1 :]
 
         pe2 = pefile.PE(data=buf, fast_load=True)
         pe2.OPTIONAL_HEADER.CheckSum = pe2.generate_checksum()
@@ -151,7 +152,9 @@ subprocess.check_output([
         time.sleep(2)
         self.a.remove("C:\\pgdsepatch.py")
 
+
 class Zer0m0n(Onemon, Dependency):
     """Backwards compatibility."""
+
     name = "zer0m0n"
     recommended = False

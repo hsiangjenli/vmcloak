@@ -21,18 +21,30 @@ from vmcloak.constants import VMCLOAK_ROOT
 from vmcloak.dependencies import Python, ThreemonPatch, Finalize
 from vmcloak.install import DependencyInstaller, InstallError, find_recipe
 from vmcloak.misc import (
-    wait_for_agent, drop_privileges, download_file, filename_from_url, sha1_file
+    wait_for_agent,
+    drop_privileges,
+    download_file,
+    filename_from_url,
+    sha1_file,
 )
 from vmcloak.rand import random_string
 from vmcloak.repository import (
-    image_path, Session, Image, Snapshot, iso_dst_path, db_migratable,
-    SCHEMA_VERSION, IPNet, conf_path
+    image_path,
+    Session,
+    Image,
+    Snapshot,
+    iso_dst_path,
+    db_migratable,
+    SCHEMA_VERSION,
+    IPNet,
+    conf_path,
 )
 from vmcloak.ostype import get_os
 
 logging.basicConfig(format="%(asctime)s %(name)s %(levelname)s: %(message)s")
 log = logging.getLogger("vmcloak")
 log.setLevel(logging.INFO)
+
 
 @click.group(invoke_without_command=True)
 @click.option("-u", "--user", help="Drop privileges to user.")
@@ -56,6 +68,7 @@ def main(ctx, user, quiet, debug):
 
         if ctx.invoked_subcommand != "migrate":
             exit(1)
+
 
 @main.command()
 @click.argument("name")
@@ -87,21 +100,45 @@ def clone(name, outname):
     session.add(image)
     session.commit()
 
+
 _vm_attributes = [
     click.option("--ip", help="Guest IP address to use"),
-    click.option("--port", default=8000, help="Port to run the Agent on.", show_default=True),
-    click.option("--network", help="The network to use in CIDR notation. Example: 192.168.30.0/24. Uses VM platform default if not given."),
-    click.option("--gateway", help="Guest default gateway IP address (IP of bridge interface is used if none is given)"),
+    click.option(
+        "--port", default=8000, help="Port to run the Agent on.", show_default=True
+    ),
+    click.option(
+        "--network",
+        help="The network to use in CIDR notation. Example: 192.168.30.0/24. Uses VM platform default if not given.",
+    ),
+    click.option(
+        "--gateway",
+        help="Guest default gateway IP address (IP of bridge interface is used if none is given)",
+    ),
     click.option("--dns", default="8.8.8.8", help="DNS Server.", show_default=True),
-    click.option("--dns2", default="8.8.4.4", help="Secondary DNS server.", show_default=True),
+    click.option(
+        "--dns2", default="8.8.4.4", help="Secondary DNS server.", show_default=True
+    ),
     click.option("--cpus", default=1, help="CPU count.", show_default=True),
     click.option("--ramsize", type=int, help="Memory size"),
     click.option("--vramsize", default=16, help="Video memory size"),
-    click.option("--hddsize", type=int, default=256, help="HDD size in GB", show_default=True),
-    click.option("--tempdir", default=iso_dst_path, help="Temporary directory to build the ISO file.", show_default=True),
-    click.option("--resolution", default="1024x768", help="Screen resolution.", show_default=True),
-    click.option("--vm-visible", is_flag=True, help="Start the Virtual Machine in GUI mode."),
-    click.option("--vrde", is_flag=True, help="Enable the remote display (RDP or VNC)."),
+    click.option(
+        "--hddsize", type=int, default=256, help="HDD size in GB", show_default=True
+    ),
+    click.option(
+        "--tempdir",
+        default=iso_dst_path,
+        help="Temporary directory to build the ISO file.",
+        show_default=True,
+    ),
+    click.option(
+        "--resolution", default="1024x768", help="Screen resolution.", show_default=True
+    ),
+    click.option(
+        "--vm-visible", is_flag=True, help="Start the Virtual Machine in GUI mode."
+    ),
+    click.option(
+        "--vrde", is_flag=True, help="Enable the remote display (RDP or VNC)."
+    ),
     click.option("--vrde-port", default=3389, help="Specify the remote display port."),
     # click.option("--paravirtprovider", default="default", help="Select paravirtprovider for Virtualbox none|default|legacy|minimal|hyperv|kvm")
 ]
@@ -110,16 +147,23 @@ _iso_attributes = [
     # TODO: use something like --os winX
     # click.option("--winxp", is_flag=True, help="This is a Windows XP instance."), # Comment all non-x64 OS for now until we test them with new VMCloak.
     # click.option("--win7x86", is_flag=True, help="This is a Windows 7 32-bit instance."),  # Comment all non-x64 OS for now until we test them with new VMCloak.
-    click.option("--win7x64", is_flag=True, help="This is a Windows 7 64-bit instance."),
+    click.option(
+        "--win7x64", is_flag=True, help="This is a Windows 7 64-bit instance."
+    ),
     # click.option("--win81x86", is_flag=True, help="This is a Windows 8.1 32-bit instance."),  # Comment all non-x64 OS for now until we test them with new VMCloak.
-    click.option("--win81x64", is_flag=True, help="This is a Windows 8.1 64-bit instance."),
+    click.option(
+        "--win81x64", is_flag=True, help="This is a Windows 8.1 64-bit instance."
+    ),
     # click.option("--win10x86", is_flag=True, help="This is a Windows 10 32-bit instance."),  # Comment all non-x64 OS for now until we test them with new VMCloak.
-    click.option("--win10x64", is_flag=True, help="This is a Windows 10 64-bit instance."),
+    click.option(
+        "--win10x64", is_flag=True, help="This is a Windows 10 64-bit instance."
+    ),
     click.option("--iso-mount", help="Mounted ISO Windows installer image."),
     click.option("--serial-key", help="Windows Serial Key."),
     click.option("--product", help="Windows 7 product version."),
     click.option("--python-version", help="Python version to install on VM."),
 ]
+
 
 def _add_install_attr(func):
     for attr in _vm_attributes:
@@ -128,10 +172,12 @@ def _add_install_attr(func):
         func = attr(func)
     return func
 
+
 def _add_snapshot_attr(func):
     for attr in _vm_attributes:
         func = attr(func)
     return func
+
 
 # Comment all non-x64 windows OSes for now until we test them with new VMCloak.
 def os_from_attr(attr):
@@ -192,6 +238,7 @@ def createiso(ctx, iso_path, **attr):
 
     _create_iso(iso_path, attr)
 
+
 def _create_iso(iso_path, attr):
     try:
         if not _ip_in_network(attr["ip"], attr["gateway"], attr["netmask"]):
@@ -212,8 +259,10 @@ def _create_iso(iso_path, attr):
         exit(1)
     mount = h.pickmount(attr["iso_mount"])
     if not mount:
-        log.error("Please specify --iso-mount to a directory containing the "
-                  "mounted Windows Installer ISO image.")
+        log.error(
+            "Please specify --iso-mount to a directory containing the "
+            "mounted Windows Installer ISO image."
+        )
         log.info("Refer to the documentation on mounting an .iso image.")
         exit(1)
 
@@ -222,7 +271,9 @@ def _create_iso(iso_path, attr):
     os.mkdir(vmcloak_dir)
 
     # Download the Python dependency and set it up for bootstrapping the VM.
-    d = Python(h=h, i=Image(osversion=attr["osversion"]), version=attr.get("python_version"))
+    d = Python(
+        h=h, i=Image(osversion=attr["osversion"]), version=attr.get("python_version")
+    )
     d.download()
     shutil.copy(d.filepath, vmcloak_dir)
 
@@ -244,18 +295,18 @@ def _create_iso(iso_path, attr):
         INTERFACE=h.interface,
         PYTHONINSTALLER=d.exe["filename"],
         PYTHONWINDOW=d.exe["window_name"],
-        PYTHONPATH=d.exe["install_path"]
+        PYTHONPATH=d.exe["install_path"],
     )
 
     # Now try building the ISO
     try:
-        if not h.buildiso(mount, iso_path, bootstrap, h.tempdir,
-                          env_vars=env_vars):
+        if not h.buildiso(mount, iso_path, bootstrap, h.tempdir, env_vars=env_vars):
             exit(1)
     finally:
         shutil.rmtree(bootstrap)
 
     log.info("Created ISO: %s", iso_path)
+
 
 def _get_network(platform, attrs):
     network_str = attrs["network"]
@@ -264,17 +315,14 @@ def _get_network(platform, attrs):
     if network_str:
         try:
             return IPNet(
-                network_str, bridge_ip=bridge_ip,
-                bridge_interface=bridge_interface
+                network_str, bridge_ip=bridge_ip, bridge_interface=bridge_interface
             )
         except ValueError as e:
             log.error(f"Invalid network setting: {e}")
             exit(1)
 
     if not platform:
-        log.error(
-            "No platform specified to find defaults for network settings."
-        )
+        log.error("No platform specified to find defaults for network settings.")
         exit(1)
 
     ipnet = platform.default_net
@@ -288,6 +336,7 @@ def _get_network(platform, attrs):
         exit(1)
 
     return ipnet
+
 
 def _get_ip(ipnet, attr):
     if attr.get("ip"):
@@ -305,6 +354,7 @@ def _get_ip(ipnet, attr):
             exit(1)
 
     return ip
+
 
 @main.command()
 @click.argument("name")
@@ -368,26 +418,32 @@ def init(ctx, name, adapter, iso, vm, **attr):
             os.remove(iso_path)
 
     log.info("Added image %r to the repository.", name)
-    session.add(Image(name=name,
-                      path=attr["path"],
-                      osversion=attr["osversion"],
-                      servicepack="%s" % h.service_pack,
-                      mode="normal",
-                      ipaddr=attr["ip"],
-                      port=attr["port"],
-                      adapter=attr["adapter"],
-                      netmask=attr["netmask"],
-                      gateway=attr["gateway"],
-                      cpus=attr["cpus"],
-                      ramsize=attr["ramsize"],
-                      vramsize=attr["vramsize"],
-                      vm="%s" % vm,
-                      # paravirtprovider=attr["paravirtprovider"],
-                      mac=attr["mac"]))
+    session.add(
+        Image(
+            name=name,
+            path=attr["path"],
+            osversion=attr["osversion"],
+            servicepack="%s" % h.service_pack,
+            mode="normal",
+            ipaddr=attr["ip"],
+            port=attr["port"],
+            adapter=attr["adapter"],
+            netmask=attr["netmask"],
+            gateway=attr["gateway"],
+            cpus=attr["cpus"],
+            ramsize=attr["ramsize"],
+            vramsize=attr["vramsize"],
+            vm="%s" % vm,
+            # paravirtprovider=attr["paravirtprovider"],
+            mac=attr["mac"],
+        )
+    )
     session.commit()
 
-def _do_install(image, dependencies, attrs={}, skip_installed=True,
-                no_machine_start=False):
+
+def _do_install(
+    image, dependencies, attrs={}, skip_installed=True, no_machine_start=False
+):
     try:
         installer = DependencyInstaller(image, dependencies, attrs)
     except InstallError as e:
@@ -416,19 +472,45 @@ def _do_install(image, dependencies, attrs={}, skip_installed=True,
 
     return success
 
+
 @main.command()
 @click.argument("name")
 @click.argument("dependencies", nargs=-1)
 @click.option("--vm-visible", is_flag=True)
-@click.option("--vrde", is_flag=True, help="Enable the VirtualBox Remote Display Protocol.")
+@click.option(
+    "--vrde", is_flag=True, help="Enable the VirtualBox Remote Display Protocol."
+)
 @click.option("--vrde-port", default=3389, help="Specify the VRDE port.")
-@click.option("--force-reinstall", is_flag=True, help="Reinstall even if already installed by VMCloak.")
-@click.option("--no-machine-start", is_flag=True, help="Do not try to start the machine. Assume it is somehow already started and reachable.")
-@click.option("-r", "--recommended", is_flag=True, help="Install and perform recommended software and configuration changes for the OS.")
+@click.option(
+    "--force-reinstall",
+    is_flag=True,
+    help="Reinstall even if already installed by VMCloak.",
+)
+@click.option(
+    "--no-machine-start",
+    is_flag=True,
+    help="Do not try to start the machine. Assume it is somehow already started and reachable.",
+)
+@click.option(
+    "-r",
+    "--recommended",
+    is_flag=True,
+    help="Install and perform recommended software and configuration changes for the OS.",
+)
 @click.option("-d", "--debug", is_flag=True, help="Install applications in debug mode.")
 @click.pass_context
-def install(ctx, name, dependencies, vm_visible, vrde, vrde_port,
-            force_reinstall, no_machine_start, recommended, debug):
+def install(
+    ctx,
+    name,
+    dependencies,
+    vm_visible,
+    vrde,
+    vrde_port,
+    force_reinstall,
+    no_machine_start,
+    recommended,
+    debug,
+):
     """Install dependencies on an image. Dependency settings are specified
     using name.setting=value. Multiple settings per dependency can be given."""
     user_attr = {"vm_visible": vm_visible}
@@ -448,10 +530,7 @@ def install(ctx, name, dependencies, vm_visible, vrde, vrde_port,
         exit(1)
 
     if image.mode != "normal":
-        log.error(
-            "Image is already in use for snapshots. You can no longer "
-            "modify it."
-        )
+        log.error("Image is already in use for snapshots. You can no longer modify it.")
         exit(1)
 
     try:
@@ -478,18 +557,26 @@ def install(ctx, name, dependencies, vm_visible, vrde, vrde_port,
         log.error("No dependencies given to install")
         exit(1)
 
-    if not _do_install(image, dependencies, user_attr,
-                       skip_installed=not force_reinstall,
-                       no_machine_start=no_machine_start):
+    if not _do_install(
+        image,
+        dependencies,
+        user_attr,
+        skip_installed=not force_reinstall,
+        no_machine_start=no_machine_start,
+    ):
         exit(1)
 
 
 @main.command()
 @click.argument("name")
 @click.option("--vm-visible", is_flag=True)
-@click.option("--vrde", is_flag=True, help="Enable the VirtualBox Remote Display Protocol.")
+@click.option(
+    "--vrde", is_flag=True, help="Enable the VirtualBox Remote Display Protocol."
+)
 @click.option("--vrde-port", default=3389, help="Specify the VRDE port.")
-@click.option("--iso-path", help="Path to an iso file to attach as a drive to the machine.")
+@click.option(
+    "--iso-path", help="Path to an iso file to attach as a drive to the machine."
+)
 @click.pass_context
 def modify(ctx, name, vm_visible, vrde, vrde_port, iso_path):
     """Start the given image name to apply manual changes"""
@@ -514,10 +601,7 @@ def modify(ctx, name, vm_visible, vrde, vrde_port, iso_path):
         exit(1)
 
     if image.mode != "normal":
-        log.error(
-            "Image is already in use for snapshots. You can no "
-            "longer modify it."
-        )
+        log.error("Image is already in use for snapshots. You can no longer modify it.")
         exit(1)
 
     try:
@@ -539,6 +623,7 @@ def modify(ctx, name, vm_visible, vrde, vrde_port, iso_path):
         log.error(f"Error during image shutdown: {e}")
     finally:
         p.remove_vm_data(image.name)
+
 
 def _snapshot(image, vmname, attr, interactive):
     log.info("Creating snapshot %s (%s)", vmname, attr["ip"])
@@ -563,17 +648,21 @@ def _snapshot(image, vmname, attr, interactive):
         exit(1)
 
     if attr.get("resolution"):
-       width, height = attr["resolution"].split("x")
-       a.resolution(width, height)
+        width, height = attr["resolution"].split("x")
+        a.resolution(width, height)
 
     if interactive:
-        a.upload("C:\\vmcloak\\interactive.txt",
-                 "Please make your final changes to this VM. When you're"
-                 "done, close this window and we'll create a snapshot.")
+        a.upload(
+            "C:\\vmcloak\\interactive.txt",
+            "Please make your final changes to this VM. When you're"
+            "done, close this window and we'll create a snapshot.",
+        )
 
         log.info("You've started the snapshot creation in interactive mode!")
         log.info("Please make your last changes to the VM.")
-        log.info("When you're done close the spawned notepad process in the VM to take the final snapshot.")
+        log.info(
+            "When you're done close the spawned notepad process in the VM to take the final snapshot."
+        )
         a.execute("notepad.exe C:\\vmcloak\\interactive.txt", cucksync=False)
 
     a.remove("C:\\vmcloak")
@@ -585,18 +674,25 @@ def _snapshot(image, vmname, attr, interactive):
     p.create_machineinfo_dump(vmname, image)
 
     # Create a database entry for this snapshot.
-    return Snapshot(image_id=image.id, vmname=vmname, hostname=hostname,
-                    ipaddr=attr["ip"], port=attr["port"])
+    return Snapshot(
+        image_id=image.id,
+        vmname=vmname,
+        hostname=hostname,
+        ipaddr=attr["ip"],
+        port=attr["port"],
+    )
+
 
 def _if_defined(attr, k, v):
     if v is not None:
         attr[k] = v
 
+
 def _ip_in_network(ip, gateway_ip, netmask):
     from ipaddress import ip_network, ip_address
 
-    return ip_address(ip) in ip_network(f"{gateway_ip}/{netmask}",
-                                        strict=False)
+    return ip_address(ip) in ip_network(f"{gateway_ip}/{netmask}", strict=False)
+
 
 def vm_iter(count, name, iplist, port):
     if not count or count == 1:
@@ -604,6 +700,7 @@ def vm_iter(count, name, iplist, port):
     else:
         for i in range(count):
             yield "%s%s" % (name, i + 1), iplist[i], port + i
+
 
 def _do_final_changes(nopatch, image, attr):
     deps = []
@@ -628,13 +725,28 @@ def _do_final_changes(nopatch, image, attr):
 
 
 _ISOS = {
-    "win7x64":("36ae90defbad9d9539e649b193ae573b77a71c83","https://cuckoo-hatch.cert.ee/static/vm/win7ultimate.iso"),
-    "win10x64": ("ce8005a659e8df7fe9b080352cb1c313c3e9adce", "https://cuckoo-hatch.cert.ee/static/vm/Win10_1703_English_x64.iso")
+    "win7x64": (
+        "36ae90defbad9d9539e649b193ae573b77a71c83",
+        "https://cuckoo-hatch.cert.ee/static/vm/win7ultimate.iso",
+    ),
+    "win10x64": (
+        "ce8005a659e8df7fe9b080352cb1c313c3e9adce",
+        "https://cuckoo-hatch.cert.ee/static/vm/Win10_1703_English_x64.iso",
+    ),
 }
+
+
 @main.command()
-@click.option("--download-to", help=f"The filepath to write the ISO to. Will go to {iso_dst_path} otherwise.")
-@click.option("--win7x64", is_flag=True, help="The recommended Windows 7 x64 ISO for Cuckoo 3")
-@click.option("--win10x64", is_flag=True, help="The recommended Windows 10 x64 ISO for Cuckoo 3")
+@click.option(
+    "--download-to",
+    help=f"The filepath to write the ISO to. Will go to {iso_dst_path} otherwise.",
+)
+@click.option(
+    "--win7x64", is_flag=True, help="The recommended Windows 7 x64 ISO for Cuckoo 3"
+)
+@click.option(
+    "--win10x64", is_flag=True, help="The recommended Windows 10 x64 ISO for Cuckoo 3"
+)
 def isodownload(win7x64, win10x64, download_to):
     """Download the recommended operating system ISOs for Cuckoo 3. These are
     specific OS versions/builds."""
@@ -657,7 +769,9 @@ def isodownload(win7x64, win10x64, download_to):
         iso_path = os.path.join(conf_path, filename_from_url(url))
 
     if os.path.exists(iso_path) and expected_sha1 == sha1_file(iso_path):
-        log.info(f"Not downloading, ISO {name} already exists at {iso_path} with expected SHA1 {expected_sha1}")
+        log.info(
+            f"Not downloading, ISO {name} already exists at {iso_path} with expected SHA1 {expected_sha1}"
+        )
         return
 
     log.info(f"Downloading ISO for {name} to {iso_path}")
@@ -680,27 +794,60 @@ def cleanup(name, vm):
     p = repository.platform(vm)
     p.remove_vm_data(name)
 
+
 @main.command()
 @click.argument("name")
 @click.argument("vmname")
 @click.argument("ip", required=False)
 @click.option("--resolution", help="Screen resolution.")
-@click.option("--ramsize", type=int, help="Amount of virtual memory to assign. Same as image if not specified.")
-@click.option("--cpus", type=int, help="Amount of CPUs to assign. Same as image if not specified.")
+@click.option(
+    "--ramsize",
+    type=int,
+    help="Amount of virtual memory to assign. Same as image if not specified.",
+)
+@click.option(
+    "--cpus", type=int, help="Amount of CPUs to assign. Same as image if not specified."
+)
 @click.option("--hostname", help="Hostname for this VM.")
 # @click.option("--adapter", help="Hostonly adapter for this VM.")
-@click.option("--vm-visible", is_flag=True, help="Start the Virtual Machine in GUI mode.")
-@click.option("--count", type=int, help="The amount of snapshots to make.", default=1, show_default=True)
+@click.option(
+    "--vm-visible", is_flag=True, help="Start the Virtual Machine in GUI mode."
+)
+@click.option(
+    "--count",
+    type=int,
+    help="The amount of snapshots to make.",
+    default=1,
+    show_default=True,
+)
 # @click.option("--share", help="Add shared folder")
-@click.option("--vrde", is_flag=True, help="Enable the VirtualBox Remote Display Protocol.")
+@click.option(
+    "--vrde", is_flag=True, help="Enable the VirtualBox Remote Display Protocol."
+)
 @click.option("--vrde-port", default=3389, help="Specify the VRDE port.")
 @click.option("--interactive", is_flag=True, help="Enable interactive snapshot mode.")
 @click.option("--com1", is_flag=True, help="Enable COM1 for this VM.")
-@click.option("--nopatch", is_flag=True, help="Do not patch the image to be able to load threemon")
+@click.option(
+    "--nopatch", is_flag=True, help="Do not patch the image to be able to load threemon"
+)
 @click.pass_context
-def snapshot(ctx, name, vmname, ip, resolution, ramsize, cpus, hostname,
-             vm_visible, count, vrde, vrde_port, interactive,
-             com1, nopatch):
+def snapshot(
+    ctx,
+    name,
+    vmname,
+    ip,
+    resolution,
+    ramsize,
+    cpus,
+    hostname,
+    vm_visible,
+    count,
+    vrde,
+    vrde_port,
+    interactive,
+    com1,
+    nopatch,
+):
     """Create one or more snapshots from an image"""
     if count and hostname:
         log.error(
@@ -771,9 +918,7 @@ def snapshot(ctx, name, vmname, ip, resolution, ramsize, cpus, hostname,
     # _if_defined(attr, "share", share)
 
     try:
-        iplist = image.network.get_ips(
-            count=count, start_offset=10, start_ip=ip
-        )
+        iplist = image.network.get_ips(count=count, start_offset=10, start_ip=ip)
     except (ValueError, KeyError) as e:
         log.error(f"Network error: {e}")
         exit(1)
@@ -809,6 +954,7 @@ def snapshot(ctx, name, vmname, ip, resolution, ramsize, cpus, hostname,
         log.info(f"Snapshot '{vmname}' created")
 
     log.info("Finished creating snapshots")
+
 
 # XXX Comment until we tested vbox, libvirt, qemu support with this
 # in newer versions.
@@ -874,6 +1020,7 @@ def snapshot(ctx, name, vmname, ip, resolution, ramsize, cpus, hostname,
 #     vmcloak.dependencies.names["zer0m0n"](a=a, h=h).run()
 #     log.info("Good to go, now *reboot* and make a new *snapshot* of your VM!")
 
+
 @main.command()
 @click.option("--revision", default="head", help="Migrate to a certain revision")
 def migrate(revision):
@@ -887,12 +1034,13 @@ def migrate(revision):
     try:
         subprocess.check_call(
             ["alembic", "upgrade", "%s" % revision],
-            cwd=os.path.join(VMCLOAK_ROOT, "data", "db_migration")
+            cwd=os.path.join(VMCLOAK_ROOT, "data", "db_migration"),
         )
     except subprocess.CalledProcessError as e:
         log.exception("Database migration failed: %s", e)
         exit(1)
     log.info("Database migration successful!")
+
 
 @main.command()
 @click.argument("name")
@@ -905,6 +1053,7 @@ def delvm(name):
         exit(1)
     obj.platform.remove_vm_data(name)
     repository.remove_snapshot(name)
+
 
 @main.command()
 @click.argument("name")
@@ -924,28 +1073,41 @@ def delimg(name):
     finally:
         repository.remove_image(name)
 
+
 # @main.command("import")
 # def _import():
 #     """Import images and snapshots
 #     Can also be used to fix paths"""
 #     repository.import_all()
 
+
 # List things:
 @main.group("list")
 def _list():
     pass
 
+
 @_list.command("images")
 def list_images():
     for img in repository.list_images():
-        print("*", img.name, "|", img.platform.name,"|",
-              img.ipaddr, "|","Adapter:", img.adapter)
+        print(
+            "*",
+            img.name,
+            "|",
+            img.platform.name,
+            "|",
+            img.ipaddr,
+            "|",
+            "Adapter:",
+            img.adapter,
+        )
         installed = img.installed
         if not installed:
             continue
 
         for dep, version in sorted(img.installed, key=lambda k: k[0]):
             print("\t", "-", dep, f"| version={version}" if version else "")
+
 
 @_list.command("snapshots")
 def list_snapshots():
@@ -955,9 +1117,13 @@ def list_snapshots():
     for snap in snaps:
         if snap.image.name != parent:
             parent = snap.image.name
-            print(parent, f"{snap.image.ipaddr}({snap.image.adapter})",
-                  f"({snap.platform.name})")
+            print(
+                parent,
+                f"{snap.image.ipaddr}({snap.image.adapter})",
+                f"({snap.platform.name})",
+            )
         print("-", snap.vmname, snap.ipaddr)
+
 
 def list_dependencies(name_only=False):
     print("Name", "version", "target", "sha1", "arch")
@@ -975,14 +1141,19 @@ def list_dependencies(name_only=False):
         for exe in d.exes:
             v = exe.get("version", "None")
             print(
-                name, "*" if d.default and d.default == v else "",
-                exe.get("version", "None") + " "*(versionlen - len(v)),
-                exe.get("target"), exe.get("sha1", "None"),
+                name,
+                "*" if d.default and d.default == v else "",
+                exe.get("version", "None") + " " * (versionlen - len(v)),
+                exe.get("target"),
+                exe.get("sha1", "None"),
                 exe.get("arch", ""),
             )
-        print("----"*5)
+        print("----" * 5)
+
 
 @_list.command("deps")
-@click.option("--name-only", is_flag=True, help="Only list the names of existing dependencies")
+@click.option(
+    "--name-only", is_flag=True, help="Only list the names of existing dependencies"
+)
 def _list_deps(name_only):
     list_dependencies(name_only)

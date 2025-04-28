@@ -9,16 +9,15 @@ from vmcloak.abstract import Dependency
 
 log = logging.getLogger(__name__)
 
+
 class WinDDK(Dependency):
     name = "winddk"
-    components=[
+    components = [
         # Windows headers and libraries and a complete set of build tools for
         # building Windows drivers
         "{45273B30-342D-4748-494A-4B4C4D4E4F50}",
-
         # General purpose and device specific tools
         "{45393536-343C-4748-494A-4B4C4D4E4F50}",
-
         # Debugger
         "{45302A29-4546-4748-494A-4B4C4D4E4F50}",
     ]

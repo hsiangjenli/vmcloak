@@ -11,6 +11,7 @@ from vmcloak.win7 import Windows7x64, Windows7x86
 from vmcloak.win81 import Windows81x64, Windows81x86
 from vmcloak.win10 import Windows10x64, Windows10x86
 
+
 class Swarm(object):
     vms = {
         "winxp": {
@@ -79,15 +80,11 @@ class Swarm(object):
             target.update(d)
             return target
 
-        raise SwarmError(
-            "Invalid target type for applying a dictionary"
-        )
+        raise SwarmError("Invalid target type for applying a dictionary")
 
     def parse_matrix(self):
         if not self.cfg.get("matrix"):
-            raise SwarmError(
-                "Build matrix is missing from swarm configuration!"
-            )
+            raise SwarmError("Build matrix is missing from swarm configuration!")
 
         if isinstance(self.cfg["matrix"], dict):
             for name, machine in self.cfg["matrix"].items():
@@ -115,9 +112,7 @@ class Swarm(object):
 
     def parse_machine(self, machine, m):
         if "os" not in m:
-            raise SwarmError(
-                "Machine '%s' does not have an OS defined!" % machine
-            )
+            raise SwarmError("Machine '%s' does not have an OS defined!" % machine)
 
         ret = {
             "os": m["os"],
@@ -143,10 +138,12 @@ class Swarm(object):
             if isinstance(dep, str):
                 ret.append(self.parse_dependency(dep))
             elif isinstance(dep, dict):
-                ret.append(self.apply_dict(
-                    self.parse_dependency(list(dep.keys())[0]),
-                    list(dep.values())[0][0]
-                ))
+                ret.append(
+                    self.apply_dict(
+                        self.parse_dependency(list(dep.keys())[0]),
+                        list(dep.values())[0][0],
+                    )
+                )
             else:
                 raise SwarmError()
         return ret
@@ -159,7 +156,7 @@ class Swarm(object):
         if isinstance(dep, dict):
             dep = dep.items()
         elif isinstance(dep, list):
-            dep = (None, dep),
+            dep = ((None, dep),)
 
         ret = []
         for requirement, info in dep:
@@ -175,40 +172,52 @@ class Swarm(object):
                 target_os = None
 
             if isinstance(info, str):
-                ret.append({
-                    "os": target_os,
-                    "dependency": dependency,
-                    "version": info,
-                })
+                ret.append(
+                    {
+                        "os": target_os,
+                        "dependency": dependency,
+                        "version": info,
+                    }
+                )
                 continue
 
             if isinstance(info, list):
                 for entry in info:
                     if isinstance(entry, dict):
-                        ret.append(self.apply_dict({
-                            "os": target_os,
-                            "dependency": dependency,
-                        }, entry))
+                        ret.append(
+                            self.apply_dict(
+                                {
+                                    "os": target_os,
+                                    "dependency": dependency,
+                                },
+                                entry,
+                            )
+                        )
                         continue
 
                     if isinstance(entry, (int, float, str)):
-                        ret.append({
-                            "os": target_os,
-                            "dependency": dependency,
-                            "version": "%s" % entry,
-                        })
+                        ret.append(
+                            {
+                                "os": target_os,
+                                "dependency": dependency,
+                                "version": "%s" % entry,
+                            }
+                        )
                         continue
 
-                    raise SwarmError(
-                        "Invalid dependency specification: %r" % info
-                    )
+                    raise SwarmError("Invalid dependency specification: %r" % info)
                 continue
 
             if isinstance(info, dict):
-                ret.append(self.apply_dict({
-                    "os": target_os,
-                    "dependency": dependency,
-                }, info))
+                ret.append(
+                    self.apply_dict(
+                        {
+                            "os": target_os,
+                            "dependency": dependency,
+                        },
+                        info,
+                    )
+                )
 
         return ret
 

@@ -7,6 +7,7 @@ import sys
 from ctypes import c_char, c_ushort, c_uint, c_char_p
 from ctypes import windll, Structure, POINTER, sizeof
 
+
 # http://blogs.technet.com/b/heyscriptingguy/archive/2010/07/07/hey-scripting-guy-how-can-i-change-my-desktop-monitor-resolution-via-windows-powershell.aspx
 # http://msdn.microsoft.com/en-us/library/windows/desktop/dd183565(v=vs.85).aspx
 class _DevMode(Structure):
@@ -23,6 +24,7 @@ class _DevMode(Structure):
         ("dmPelsHeight", c_uint),
         ("unused2", c_uint * 10),
     ]
+
 
 EnumDisplaySettings = windll.user32.EnumDisplaySettingsA
 EnumDisplaySettings.argtypes = c_char_p, c_uint, POINTER(_DevMode)

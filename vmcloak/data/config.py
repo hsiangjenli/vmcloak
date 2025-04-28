@@ -5,7 +5,6 @@
 
 VBOX_CONFIG = {
     "VBoxInternal/Devices/pcbios/0/Config": dict(
-
         # http://blog.prowling.nu/2012/08/modifying-virtualbox-settings-for.html
         DmiBIOSVendor=("bios", "vendor"),
         DmiBIOSVersion=("bios", "version"),
@@ -14,7 +13,6 @@ VBOX_CONFIG = {
         # DmiBIOSReleaseMinor=
         # DmiBIOSFirmwareMajor=
         # DmiBIOSFirmwareMinor=
-
         DmiSystemVendor=("system", "vendor"),
         DmiSystemProduct=("system", "product"),
         DmiSystemVersion=("system", "version"),
@@ -22,7 +20,6 @@ VBOX_CONFIG = {
         DmiSystemSKU=("system", "sku"),
         DmiSystemFamily=("system", "family"),
         DmiSystemUuid=("system", "uuid"),
-
         # http://blog.prowling.nu/2012/10/modifying-virtualbox-settings-for.html
         DmiBoardVendor=("board", "vendor"),
         DmiBoardProduct=("board", "product"),
@@ -30,7 +27,6 @@ VBOX_CONFIG = {
         DmiBoardSerial=("board", "serial"),
         DmiBoardAssetTag=("board", "asset"),
         DmiBoardLocInChass=("board", "location"),
-
         DmiChassisVendor=("chassis", "vendor"),
         DmiChassisVersion=("chassis", "version"),
         DmiChassisSerial=("chassis", "serial"),
@@ -38,7 +34,6 @@ VBOX_CONFIG = {
     ),
     "VBoxInternal/Devices/piix3ide/0/Config": {
         "Port0": dict(
-
             # http://downloads.cuckoosandbox.org/slides/blackhat.pdf, Page 82
             # https://forums.virtualbox.org/viewtopic.php?f=1&t=48718
             # ATAPIProductId="",
@@ -46,7 +41,6 @@ VBOX_CONFIG = {
             # ATAPIVendorId="",
         ),
         "PrimaryMaster": dict(
-
             # http://blog.prowling.nu/2012/08/modifying-virtualbox-settings-for.html
             SerialNumber=("harddisk", "serial"),
             FirmwareRevision=("harddisk", "revision"),

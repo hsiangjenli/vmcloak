@@ -23,5 +23,6 @@ def upgrade():
         "image", sa.Column("paravirtprovider", sa.String(32), default="default")
     )
 
+
 def downgrade():
     pass

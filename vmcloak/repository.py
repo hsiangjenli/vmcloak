@@ -28,11 +28,14 @@ engine = create_engine("sqlite:///%s" % repository)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 
+
 class AlembicVersion(Base):
     """Database schema version. Used for automatic database migrations."""
+
     __tablename__ = "alembic_version"
 
     version_num = Column(String(32), nullable=False, primary_key=True)
+
 
 def db_migratable():
     ses = Session()
@@ -41,6 +44,7 @@ def db_migratable():
         return v is None or v.version_num != SCHEMA_VERSION
     finally:
         ses.close()
+
 
 class Image(Base):
     """Represents each image that is created and altered along the way."""
@@ -89,16 +93,17 @@ class Image(Base):
     def installed(self, installed_list):
         if not isinstance(installed_list, (list, set)):
             raise TypeError(
-                "Installed_list must be a list or set of (dep, version) "
-                "entries"
+                "Installed_list must be a list or set of (dep, version) entries"
             )
 
         if isinstance(installed_list, list):
             installed_list = set(installed_list)
 
         self._installed = ",".join(
-            set(f"{dep}:{version}" if version else f"{dep}:"
-                for dep, version in installed_list)
+            set(
+                f"{dep}:{version}" if version else f"{dep}:"
+                for dep, version in installed_list
+            )
         )
 
     def add_installed_versions(self, deps_versions):
@@ -131,7 +136,8 @@ class Image(Base):
         if not self._net_obj:
             self._net_obj = IPNet(
                 network_notation=f"{self.ipaddr}/{self.netmask}",
-                bridge_ip=self.gateway, bridge_interface=self.adapter
+                bridge_ip=self.gateway,
+                bridge_interface=self.adapter,
             )
 
         return self._net_obj
@@ -142,15 +148,29 @@ class Image(Base):
     def attr(self):
         translate = {"ipaddr": "ip"}
         attr = {}
-        for k in ("path", "osversion", "servicepack", "ipaddr", "port",
-                  "adapter", "netmask", "gateway", "cpus", "ramsize",
-                  "vramsize", "paravirtprovider", "mac"):
+        for k in (
+            "path",
+            "osversion",
+            "servicepack",
+            "ipaddr",
+            "port",
+            "adapter",
+            "netmask",
+            "gateway",
+            "cpus",
+            "ramsize",
+            "vramsize",
+            "paravirtprovider",
+            "mac",
+        ):
             field = translate.get(k, k)
             attr[field] = getattr(self, k)
         return attr
 
+
 class Snapshot(Base):
     """Represents each snapshot that has been created."""
+
     __tablename__ = "snapshot"
 
     id = Column(Integer, primary_key=True)
@@ -170,6 +190,7 @@ class Snapshot(Base):
 
     def VM(self):
         return platform(self.image.vm).VM(self.vmname)
+
 
 if not os.path.isdir(conf_path):
     os.mkdir(conf_path)
@@ -200,50 +221,58 @@ if not os.path.isdir(deps_path):
 if not os.path.isdir(iso_dst_path):
     os.mkdir(iso_dst_path)
 
+
 def platform(name):
-    full = 'vmcloak.platforms.' + name
+    full = "vmcloak.platforms." + name
     m = modules.get(full)
     if not m:
         m = __import__(full)
         m = getattr(m.platforms, name)
-        if hasattr(m, 'initialize'):
+        if hasattr(m, "initialize"):
             m.initialize()
     return m
 
+
 # TODO: helper function to create missing/fix broken sidecar
+
 
 # TODO
 # {{{
 def import_image(name):
     full_path = join(image_path, name)
-    if name.endswith('.json'):
+    if name.endswith(".json"):
         return
-    elif name.endswith('.vdi'):
-        sidecar = full_path[:-4] + '.json'
+    elif name.endswith(".vdi"):
+        sidecar = full_path[:-4] + ".json"
         if exists(sidecar):
-            attr = load(open(sidecar, 'rb'))
+            attr = load(open(sidecar, "rb"))
         else:
             attr = {}
-        return Image(full_path, name[:-4], attr, platform('virtualbox'))
+        return Image(full_path, name[:-4], attr, platform("virtualbox"))
     else:
         raise NotImplementedError(name)
 
+
 def import_snapshot(name):
     full_path = join(vms_path, name)
-    if exists(join(full_path, name + '.vbox')):
-        sidecar = join(full_path, name + '.json')
+    if exists(join(full_path, name + ".vbox")):
+        sidecar = join(full_path, name + ".json")
         if exists(sidecar):
-            attr = load(open(sidecar, 'rb'))
+            attr = load(open(sidecar, "rb"))
         else:
             attr = {}
-        return Snapshot(full_path, name, attr, platform('virtualbox'))
+        return Snapshot(full_path, name, attr, platform("virtualbox"))
     else:
         raise NotImplementedError(name)
+
+
 # }}}
+
 
 def list_images():
     s = Session()
     return s.query(Image).all()
+
 
 def find_used_ips():
     s = Session()
@@ -253,17 +282,17 @@ def find_used_ips():
             ips.add((image.gateway, f"{image.name} gateway"))
             ips.add((image.ipaddr, f"{image.name} IP"))
             for snap in image.snapshots:
-                ips.add(
-                    (snap.ipaddr, f"Image {image.name} snapshot {snap.vmname}")
-                )
+                ips.add((snap.ipaddr, f"Image {image.name} snapshot {snap.vmname}"))
     finally:
         s.close()
 
     return ips
 
+
 def list_snapshots():
     s = Session()
     return s.query(Snapshot).all()
+
 
 def any_from_name(name):
     s = Session()
@@ -273,9 +302,11 @@ def any_from_name(name):
     img = s.query(Image).filter_by(name=name).first()
     return img
 
+
 def find_snapshot(name):
     s = Session()
     return s.query(Snapshot).filter_by(vmname=name).first()
+
 
 def remove_image(name):
     s = Session()
@@ -284,12 +315,14 @@ def remove_image(name):
         s.delete(img)
         s.commit()
 
+
 def remove_snapshot(name):
     s = Session()
     snap = s.query(Snapshot).filter_by(vmname=name).first()
     if snap:
         s.delete(snap)
         s.commit()
+
 
 def find_vm(name):
     s = Session()
@@ -301,36 +334,39 @@ def find_vm(name):
         return True, snap
     return False, None
 
+
 def find_image(name):
     session = Session()
     return session.query(Image).filter_by(name=name).first()
 
+
 def image_has_snapshots(name):
     s = Session()
-    t = s.query(Snapshot).filter_by(Snapshot.image.name==name).first()
+    t = s.query(Snapshot).filter_by(Snapshot.image.name == name).first()
     return t
+
 
 def _ipv4_from_interface(interface):
     import socket
     from fcntl import ioctl
     from struct import pack
+
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     SIOCGIFADDR = 0x8915
     try:
-        return socket.inet_ntoa(ioctl(
-            s.fileno(), SIOCGIFADDR, pack(
-                "256s", interface.encode()
-            )
-        )[20:24])
+        return socket.inet_ntoa(
+            ioctl(s.fileno(), SIOCGIFADDR, pack("256s", interface.encode()))[20:24]
+        )
     except OSError:
         return None
     finally:
         s.close()
 
-class IPNet:
 
-    def __init__(self, network_notation, bridge_ip=None, bridge_interface=None,
-                 unique_ips=True):
+class IPNet:
+    def __init__(
+        self, network_notation, bridge_ip=None, bridge_interface=None, unique_ips=True
+    ):
         if "/" not in network_notation:
             network_notation = f"{network_notation}/24"
 
@@ -389,19 +425,13 @@ class IPNet:
     def check_ip_usable(self, ip):
         ip = ip_address(ip)
         if ip not in self.network:
-            raise ValueError(
-                f"{ip} is not part of network {self.network}"
-            )
+            raise ValueError(f"{ip} is not part of network {self.network}")
 
         if ip == self.network.broadcast_address:
-            raise ValueError(
-                f"IP is broadcast address of network: {self.network}"
-            )
+            raise ValueError(f"IP is broadcast address of network: {self.network}")
 
         if ip == self.network.network_address:
-            raise ValueError(
-                f"IP is network address of network: {self.network}"
-            )
+            raise ValueError(f"IP is network address of network: {self.network}")
 
         if self._unique and not self._used:
             self._populate_used()
@@ -443,8 +473,7 @@ class IPNet:
         while len(ips) < count:
             curr_ip = ip
             ip = ip + 1
-            if curr_ip in self._used or \
-                    curr_ip == self.network.broadcast_address:
+            if curr_ip in self._used or curr_ip == self.network.broadcast_address:
                 continue
 
             if curr_ip not in self.network:

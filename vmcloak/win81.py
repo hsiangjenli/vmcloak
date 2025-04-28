@@ -4,6 +4,7 @@
 
 from vmcloak.abstract import WindowsAutounattended
 
+
 class Windows81(WindowsAutounattended):
     name = "win81"
     service_pack = 2
@@ -16,9 +17,11 @@ class Windows81(WindowsAutounattended):
 
     dummy_serial_key = "GCRJD-8NW9H-F2CDX-CCM8D-9D6T9"
 
+
 class Windows81x64(Windows81):
     arch = "amd64"
     mount = "/mnt/win81x64", "/mnt/win81"
+
 
 class Windows81x86(Windows81):
     arch = "x86"

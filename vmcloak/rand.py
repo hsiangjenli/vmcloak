@@ -5,6 +5,7 @@
 import random
 import string
 
+
 def random_string(minimum, maximum=None):
     if maximum is None:
         maximum = minimum
@@ -12,7 +13,9 @@ def random_string(minimum, maximum=None):
     count = random.randint(minimum, maximum)
     return "".join(random.choice(string.ascii_letters) for x in range(count))
 
+
 _system_macs = set()
+
 
 def _get_system_macs():
     """Discover system interface mac addresses."""
@@ -22,12 +25,15 @@ def _get_system_macs():
         return _system_macs
 
     from psutil import net_if_addrs
+
     try:
         from socket import AF_LINK
+
         family_link = AF_LINK
     except ImportError:
         # Attribute is af_packet on Linux
         from socket import AF_PACKET
+
         family_link = AF_PACKET
 
     for _, if_addrs in net_if_addrs().items():
@@ -51,14 +57,28 @@ def random_mac():
 
     return "%x%x:%x%x:%x%x:%x%x:%x%x:%x%x" % tuple(values)
 
+
 def random_vendor_mac():
     skip_macs = _get_system_macs()
     # Prefixes from a few commonly used desktop and laptop vendors.
     vendor_prefixes = [
-        "94:b8:6d", "B8:03:05", "E8:2A:EA", "A4:11:94", "8C:16:45",
-        "C8:7E:75", "10:1D:C0", "78:9E:D0", "00:16:17", "00:1F:CF",
-        "00:0A:F7", "D4:01:29", "00:E0:4C", "00:19:3C", "00:17:A4",
-        "00:06:5B", "A4:BA:DB"
+        "94:b8:6d",
+        "B8:03:05",
+        "E8:2A:EA",
+        "A4:11:94",
+        "8C:16:45",
+        "C8:7E:75",
+        "10:1D:C0",
+        "78:9E:D0",
+        "00:16:17",
+        "00:1F:CF",
+        "00:0A:F7",
+        "D4:01:29",
+        "00:E0:4C",
+        "00:19:3C",
+        "00:17:A4",
+        "00:06:5B",
+        "A4:BA:DB",
     ]
     random.shuffle(vendor_prefixes)
     prefix = random.choice(vendor_prefixes).lower()
@@ -77,14 +97,16 @@ def random_vendor_mac():
 
     return random_mac()
 
+
 def random_serial(length=None):
     if length is None:
         length = random.randint(8, 20)
 
-    return "".join(random.choice(string.uppercase + string.digits)
-                   for _ in range(length))
+    return "".join(
+        random.choice(string.uppercase + string.digits) for _ in range(length)
+    )
+
 
 def random_uuid():
     value = random_serial(32)
-    return "-".join((value[:8], value[8:12], value[12:16],
-                     value[16:20], value[20:32]))
+    return "-".join((value[:8], value[8:12], value[12:16], value[16:20], value[20:32]))

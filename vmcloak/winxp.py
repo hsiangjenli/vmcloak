@@ -13,6 +13,7 @@ from vmcloak.verify import valid_serial_key
 
 log = logging.getLogger(__name__)
 
+
 class WindowsXP(OperatingSystem):
     name = "winxp"
     service_pack = 3
@@ -20,8 +21,18 @@ class WindowsXP(OperatingSystem):
     nictype = "Am79C973"
     osdir = os.path.join("$oem$", "$1")
     genisoargs = [
-        "-no-emul-boot", "-boot-load-seg", "1984", "-boot-load-size", "4",
-        "-iso-level", "2", "-J", "-l", "-D", "-N", "-joliet-long",
+        "-no-emul-boot",
+        "-boot-load-seg",
+        "1984",
+        "-boot-load-size",
+        "4",
+        "-iso-level",
+        "2",
+        "-J",
+        "-l",
+        "-D",
+        "-N",
+        "-joliet-long",
         "-relaxed-filenames",
     ]
     interface = "Local Area Connection"

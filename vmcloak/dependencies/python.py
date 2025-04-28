@@ -4,6 +4,7 @@
 
 from vmcloak.abstract import Dependency
 
+
 class Python(Dependency):
     name = "python"
     tags = ["python"]
@@ -39,7 +40,7 @@ class Python(Dependency):
             "sha1": "bd95399506f362e7618d4f6b5a429ebf44714585",
             "filename": "python-3.7.3-amd64.exe",
             "window_name": "Python 3.7.3 (64-bit) Setup",
-            "install_path": "C:\\Python3"
+            "install_path": "C:\\Python3",
         },
         {
             "arch": "amd64",
@@ -51,9 +52,8 @@ class Python(Dependency):
             "sha1": "3ee4e92a8ef94c70fb56859503fdc805d217d689",
             "filename": "python-3.10.0-amd64.exe",
             "window_name": "Python 3.10.0 (64-bit) Setup",
-            "install_path": "C:\\Python3"
-        }
-
+            "install_path": "C:\\Python3",
+        },
     ]
 
     def run(self):

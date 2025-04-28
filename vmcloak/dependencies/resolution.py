@@ -9,6 +9,7 @@ from vmcloak.exceptions import DependencyError
 
 log = logging.getLogger(__name__)
 
+
 class Resolution(Dependency):
     name = "resolution"
 

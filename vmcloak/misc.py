@@ -19,11 +19,13 @@ import requests
 
 try:
     import pwd
+
     HAVE_PWD = True
 except ImportError:
     HAVE_PWD = False
 
 log = logging.getLogger(__name__)
+
 
 def copytreelower(srcdir, dstdir):
     """Copies the source directory as lowercase to the destination directory.
@@ -40,20 +42,19 @@ def copytreelower(srcdir, dstdir):
     prefix = len(srcdir) + (not srcdir.endswith("/"))
     for dirpath, dirnames, filenames in os.walk(srcdir):
         for dirname in dirnames:
-            os.mkdir(os.path.join(dstdir,
-                                  dirpath[prefix:].lower(),
-                                  dirname.lower()))
+            os.mkdir(os.path.join(dstdir, dirpath[prefix:].lower(), dirname.lower()))
 
         for fname in filenames:
             path = os.path.join(dirpath, fname)[prefix:]
 
             # Copy the file.
-            shutil.copyfile(os.path.join(srcdir, path),
-                            os.path.join(dstdir, path.lower()))
+            shutil.copyfile(
+                os.path.join(srcdir, path), os.path.join(dstdir, path.lower())
+            )
 
             # Make the file writable.
-            os.chmod(os.path.join(dstdir, path.lower()),
-                     stat.S_IRUSR | stat.S_IWUSR)
+            os.chmod(os.path.join(dstdir, path.lower()), stat.S_IRUSR | stat.S_IWUSR)
+
 
 def copytreeinto(srcdir, dstdir):
     """Copy one directory into another directory.
@@ -63,8 +64,9 @@ def copytreeinto(srcdir, dstdir):
 
     """
     if os.path.isfile(dstdir):
-        raise Exception("Cannot create directory if there is already "
-                        "a file: %s" % dstdir)
+        raise Exception(
+            "Cannot create directory if there is already a file: %s" % dstdir
+        )
 
     if not os.path.isdir(dstdir):
         os.mkdir(dstdir)
@@ -76,6 +78,7 @@ def copytreeinto(srcdir, dstdir):
             shutil.copy(path_in, path_out)
         else:
             copytreeinto(path_in, path_out)
+
 
 def ini_read(path):
     ret, section = {}, None
@@ -95,7 +98,7 @@ def ini_read(path):
             continue
 
         if line[0] == "[" and "]" in line:
-            section = line[1:line.index("]")]
+            section = line[1 : line.index("]")]
             ret[section] = []
             continue
 
@@ -106,6 +109,7 @@ def ini_read(path):
             ret[section].append("%s=%s" % (a.strip(), b.strip()))
     return mode, ret
 
+
 def ini_write(path, mode, data):
     lines = [""]
     for key in sorted(data.keys()):
@@ -115,12 +119,14 @@ def ini_write(path, mode, data):
         lines.append("")
     open(path, "wb").write("\r\n".join(lines).encode(mode))
 
+
 def ini_add(data, section, value):
     if section not in data:
         data[section] = []
 
     if value not in data[section]:
         data[section].append(value)
+
 
 def ini_delete(data, section, value):
     if section not in data:
@@ -129,6 +135,7 @@ def ini_delete(data, section, value):
     for idx, row in enumerate(data[section]):
         if row == value:
             del data[section][idx]
+
 
 def ini_merge(data, ini2, overwrite=True):
     mode, data2 = ini_read(ini2)
@@ -152,6 +159,7 @@ def ini_merge(data, ini2, overwrite=True):
             else:
                 data[section].append(value)
 
+
 def ini_read_dict(path):
     c = ConfigParser()
     c.read(path)
@@ -161,19 +169,21 @@ def ini_read_dict(path):
         ret[section] = dict(c.items(section))
     return ret
 
+
 def sha1_file(path):
     """Calculate the sha1 hash of a file."""
     h = hashlib.sha1()
 
     with open(path, "rb") as fp:
         while True:
-            buf = fp.read(8*1024*1024)
+            buf = fp.read(8 * 1024 * 1024)
             if not buf:
                 break
 
             h.update(buf)
 
     return h.hexdigest()
+
 
 def wait_for_agent(a, timeout=180):
     """Wait for the Agent to come up."""
@@ -187,6 +197,7 @@ def wait_for_agent(a, timeout=180):
             log.debug("No response")
             time.sleep(1)
     raise IOError("Agent not online within %s second(s)" % timeout)
+
 
 def drop_privileges(user):
     if not HAVE_PWD:
@@ -206,6 +217,7 @@ def drop_privileges(user):
     except OSError as e:
         sys.exit("Failed to drop privileges: %s" % e)
 
+
 def import_plugins(dirpath, module_prefix, namespace, class_):
     """Import plugins of type `class` located at `dirpath` into the
     `namespace` that starts with `module_prefix`. If `dirpath` represents a
@@ -224,19 +236,23 @@ def import_plugins(dirpath, module_prefix, namespace, class_):
         plugins.append(subclass)
     return plugins
 
+
 def ipaddr_increase(ipaddr):
     """Increases the IP address."""
     addr = struct.unpack(">I", socket.inet_aton(ipaddr))[0]
     return socket.inet_ntoa(struct.pack(">I", addr + 1))
 
+
 def filename_from_url(url):
     """Return the filename from a given url."""
     return os.path.basename(urllib.parse.urlparse(url).path)
 
+
 def download_file(url, filepath):
     """Download the file from url and store it in the given filepath."""
-    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) " \
-                 "Gecko/20100101 Firefox/94.0"
+    user_agent = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0"
+    )
     headers = {
         "User-Agent": user_agent,
     }
@@ -248,7 +264,7 @@ def download_file(url, filepath):
         with requests.get(url, headers=headers, stream=True) as resp:
             resp.raise_for_status()
             with open(filepath, "wb") as fp:
-                for chunk in resp.iter_content(chunk_size=2*1024*1024):
+                for chunk in resp.iter_content(chunk_size=2 * 1024 * 1024):
                     written += fp.write(chunk)
                     sha1_hash.update(chunk)
     except requests.RequestException as e:
@@ -258,10 +274,10 @@ def download_file(url, filepath):
     log.debug(
         "Successfully downloaded file '{}' ({:.2f}MB)' in "
         "'{:.2f}' second(s) ({:.2f}MB/s)".format(
-            filename_from_url(url), written / 1024.**2.,
-            time.time() - start, written / (time.time() - start)
+            filename_from_url(url),
+            written / 1024.0**2.0,
+            time.time() - start,
+            written / (time.time() - start),
         )
     )
     return True, sha1_hash.hexdigest()
-
-

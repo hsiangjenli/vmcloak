@@ -4,6 +4,7 @@
 
 from vmcloak.abstract import WindowsAutounattended
 
+
 class Windows7(WindowsAutounattended):
     name = "win7"
     service_pack = 2
@@ -16,9 +17,11 @@ class Windows7(WindowsAutounattended):
 
     dummy_serial_key = "33PXH-7Y6KF-2VJC9-XBBR8-HVTHH"
 
+
 class Windows7x64(Windows7):
     arch = "amd64"
     mount = "/mnt/win7x64", "/mnt/win7"
+
 
 class Windows7x86(Windows7):
     arch = "x86"

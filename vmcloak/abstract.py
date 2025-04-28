@@ -15,8 +15,12 @@ from ipaddress import ip_network
 from vmcloak.constants import VMCLOAK_ROOT
 from vmcloak.exceptions import DependencyError
 from vmcloak.misc import (
-    copytreelower, copytreeinto, sha1_file, ini_read, filename_from_url,
-    download_file
+    copytreelower,
+    copytreeinto,
+    sha1_file,
+    ini_read,
+    filename_from_url,
+    download_file,
 )
 from vmcloak.paths import get_path
 from vmcloak.repository import deps_path
@@ -32,6 +36,7 @@ GENISOIMAGE_WARNINGS = [
     b"without (standard) Rock Ridge extensions. It is highly recommended to "
     b"add Rock Ridge",
 ]
+
 
 class OperatingSystem(object):
     # Short name for this OS.
@@ -68,9 +73,7 @@ class OperatingSystem(object):
     def __init__(self):
         self.data_path = os.path.join(VMCLOAK_ROOT, "data")
         self.path = os.path.join(self.data_path, self.name)
-        self.bootstrap_path = os.path.join(
-            self.data_path, "bootstrap", self.os_name
-        )
+        self.bootstrap_path = os.path.join(self.data_path, "bootstrap", self.os_name)
         self.serial_key = None
 
         if self.name is None:
@@ -92,8 +95,9 @@ class OperatingSystem(object):
         with open(agent_arch_file, "r") as fp:
             agent_name = fp.read().strip()
 
-        return os.path.join(self.bootstrap_path, "agent", agent_name), \
-               os.path.splitext(agent_name)[1]
+        return os.path.join(self.bootstrap_path, "agent", agent_name), os.path.splitext(
+            agent_name
+        )[1]
 
     def configure(self, tempdir, product):
         """Configure the setup with settings provided by the user."""
@@ -173,26 +177,31 @@ class OperatingSystem(object):
 
         copytreeinto(bootstrap, os.path.join(outdir, self.osdir))
 
-        args = [
-            isocreate, "-quiet", "-b", "boot.img", "-o", newiso,
-        ] + self.genisoargs + [outdir]
+        args = (
+            [
+                isocreate,
+                "-quiet",
+                "-b",
+                "boot.img",
+                "-o",
+                newiso,
+            ]
+            + self.genisoargs
+            + [outdir]
+        )
 
         log.debug("Executing genisoimage: %s", " ".join(args))
-        p = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         warning = re.sub(b"[\\s]+", b" ", err).strip()
         if p.wait() or out or warning not in GENISOIMAGE_WARNINGS:
-            log.error(
-                "Error creating ISO file (err=%d): %s %s",
-                p.wait(), out, err
-            )
+            log.error("Error creating ISO file (err=%d): %s %s", p.wait(), out, err)
             shutil.rmtree(outdir)
             return False
 
         shutil.rmtree(outdir)
         return True
+
 
 class WindowsAutounattended(OperatingSystem):
     """Abstract wrapper around Windows-based Operating Systems that use the
@@ -203,8 +212,16 @@ class WindowsAutounattended(OperatingSystem):
     osdir = os.path.join("sources", "$oem$", "$1")
     dummy_serial_key = None
     genisoargs = [
-        "-no-emul-boot", "-iso-level", "2", "-udf", "-J", "-l", "-D", "-N",
-        "-joliet-long", "-relaxed-filenames",
+        "-no-emul-boot",
+        "-iso-level",
+        "2",
+        "-udf",
+        "-J",
+        "-l",
+        "-D",
+        "-N",
+        "-joliet-long",
+        "-relaxed-filenames",
     ]
 
     def _autounattend_xml(self, product, ipaddress, gateway):
@@ -217,7 +234,7 @@ class WindowsAutounattended(OperatingSystem):
             "ARCH": self.arch,
             "INTERFACE": self.interface,
             "IPADDRESS": ipaddress,
-            "DEFAULTGATEWAY": gateway
+            "DEFAULTGATEWAY": gateway,
         }
 
         buf = open(os.path.join(self.path, "autounattend.xml"), "r").read()
@@ -258,19 +275,19 @@ class WindowsAutounattended(OperatingSystem):
         if self.product and self.product.lower() not in self.preference:
             log.error(
                 "The product version of %s that was specified on the "
-                "command-line is not known by us, ignoring it.", self.name
+                "command-line is not known by us, ignoring it.",
+                self.name,
             )
             self.product = None
 
         ipnet = ip_network(
-            f"{env_vars['GUEST_GATEWAY']}/{env_vars['GUEST_MASK']}",
-            strict=False
+            f"{env_vars['GUEST_GATEWAY']}/{env_vars['GUEST_MASK']}", strict=False
         )
 
         unattend_xml = self._autounattend_xml(
             self.product or product,
             ipaddress=f"{env_vars['GUEST_IP']}/{ipnet.prefixlen}",
-            gateway=env_vars["GUEST_GATEWAY"]
+            gateway=env_vars["GUEST_GATEWAY"],
         )
         with open(os.path.join(outdir, "autounattend.xml"), "w") as f:
             f.write(unattend_xml)
@@ -285,9 +302,11 @@ class WindowsAutounattended(OperatingSystem):
         self.serial_key = serial_key or self.dummy_serial_key
         return True
 
+
 class Dependency(object):
     """Dependency instance. Each software has its own dependency class which
     informs VMCloak on how to install that particular piece of software."""
+
     name = None
     default = None
     recommended = False
@@ -308,8 +327,9 @@ class Dependency(object):
     data_path = os.path.join(VMCLOAK_ROOT, "data")
     deps_path = deps_path
 
-    def __init__(self, h=None, m=None, a=None, i=None, installer=None,
-                 version=None, settings={}):
+    def __init__(
+        self, h=None, m=None, a=None, i=None, installer=None, version=None, settings={}
+    ):
         self.h = h
         self.m = m
         self.a = a
@@ -337,8 +357,7 @@ class Dependency(object):
             if "arch" in exe and exe["arch"] != self.arch:
                 continue
 
-            if "version" in exe and self.version and \
-                    exe["version"] != self.version:
+            if "version" in exe and self.version and exe["version"] != self.version:
                 continue
 
             self.exe = exe
@@ -377,7 +396,12 @@ class Dependency(object):
             return deps
 
     def _do_downloads(self, filepaths_urllist_sha1_v):
-        for filepath, urllist, expected_sha1, _, in filepaths_urllist_sha1_v:
+        for (
+            filepath,
+            urllist,
+            expected_sha1,
+            _,
+        ) in filepaths_urllist_sha1_v:
             for url in urllist:
                 success, sha1hash = download_file(url, filepath)
                 if not success:
@@ -420,18 +444,20 @@ class Dependency(object):
                     f"entry? {downloadable_file}"
                 )
 
-            filename = downloadable_file.get("filename") or \
-                       filename_from_url(all_urls[0])
+            filename = downloadable_file.get("filename") or filename_from_url(
+                all_urls[0]
+            )
 
             if not filename:
-                raise KeyError(
-                    f"No filename in files/exes entry: {downloadable_file}"
-                )
+                raise KeyError(f"No filename in files/exes entry: {downloadable_file}")
 
             downloadables.append(
-                (os.path.join(deps_path, filename),
-                 all_urls, downloadable_file.get("sha1"),
-                 downloadable_file.get("version")),
+                (
+                    os.path.join(deps_path, filename),
+                    all_urls,
+                    downloadable_file.get("sha1"),
+                    downloadable_file.get("version"),
+                ),
             )
 
         return downloadables
@@ -491,14 +517,18 @@ class Dependency(object):
     def disable_autorun(self):
         """Disables AutoRun under Windows XP and Windows 7."""
         if self.h.name == "winxp":
-            self.a.execute("reg add HKEY_LOCAL_MACHINE\\Software\\Microsoft\\"
-                           "Windows\\CurrentVersion\\Policies\\Explorer "
-                           "/v NoDriveTypeAutoRun /t REG_DWORD /d 177 /f")
+            self.a.execute(
+                "reg add HKEY_LOCAL_MACHINE\\Software\\Microsoft\\"
+                "Windows\\CurrentVersion\\Policies\\Explorer "
+                "/v NoDriveTypeAutoRun /t REG_DWORD /d 177 /f"
+            )
 
         if self.h.name == "win7":
-            self.a.execute("reg add HKEY_LOCAL_MACHINE\\Software\\Microsoft\\"
-                           "Windows\\CurrentVersion\\Policies\\Explorer "
-                           "/v NoDriveTypeAutoRun /t REG_DWORD /d 255 /f")
+            self.a.execute(
+                "reg add HKEY_LOCAL_MACHINE\\Software\\Microsoft\\"
+                "Windows\\CurrentVersion\\Policies\\Explorer "
+                "/v NoDriveTypeAutoRun /t REG_DWORD /d 255 /f"
+            )
 
     def upload_file(self, filepath, to_machine_filepath):
         """Upload the specified filepath to the specified machine filepath"""
@@ -520,7 +550,7 @@ class Dependency(object):
     def wait_process_exit(self, process_name, timeout=None):
         """Wait for a process to exit."""
         waited = 0
-        cmd = f"tasklist /FO TABLE /NH /FI \"IMAGENAME eq {process_name}\""
+        cmd = f'tasklist /FO TABLE /NH /FI "IMAGENAME eq {process_name}"'
         while True:
             for line in self.a.execute(cmd)["stdout"].split("\n"):
                 if line.lower().startswith(process_name.lower()):
@@ -531,17 +561,14 @@ class Dependency(object):
 
             if timeout and waited >= timeout:
                 raise TimeoutError(
-                    f"Process '{process_name}' did not exit after {waited} "
-                    f"seconds."
+                    f"Process '{process_name}' did not exit after {waited} seconds."
                 )
 
             time.sleep(1)
             waited += 1
 
     def run_powershell_command(self, command):
-        return self.a.execute(
-            f'powershell -ExecutionPolicy bypass "{command}"'
-        )
+        return self.a.execute(f'powershell -ExecutionPolicy bypass "{command}"')
 
     def run_powershell_strings(self, powershell_strings):
         script_winpath = f"c:\\{random_string(6, 10)}.ps1"

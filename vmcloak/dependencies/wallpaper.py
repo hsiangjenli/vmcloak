@@ -13,6 +13,7 @@ from requests.exceptions import SSLError
 
 log = logging.getLogger(__name__)
 
+
 class Wallpaper(Dependency):
     name = "wallpaper"
 
@@ -26,9 +27,7 @@ class Wallpaper(Dependency):
         self.filepath = None
 
     def run(self):
-        uploadpath = os.path.join(
-            self.a.environ("USERPROFILE"), "Pictures", "wall.jpg"
-        )
+        uploadpath = os.path.join(self.a.environ("USERPROFILE"), "Pictures", "wall.jpg")
 
         if not self.filepath:
             try:
@@ -45,6 +44,6 @@ class Wallpaper(Dependency):
 
         # Add Wallpaper in registry.
         self.a.execute(
-            "reg add \"HKEY_CURRENT_USER\\Control Panel\\Desktop\" "
+            'reg add "HKEY_CURRENT_USER\\Control Panel\\Desktop" '
             "/v Wallpaper /t REG_SZ /d  %s /f" % uploadpath
         )

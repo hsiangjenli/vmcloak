@@ -4,6 +4,7 @@
 
 from vmcloak.abstract import Dependency
 
+
 class ThreemonPatch(Dependency):
     name = "threemonpatch"
     tags = ["threemonpatch"]
@@ -15,7 +16,8 @@ class ThreemonPatch(Dependency):
                 "https://hatching.dev/hatchvm/patchandgo_amd64_vmcloak.exe",
             ],
             "sha1": "a8f8ed626b9fc9f66938ac034db4e8750664a6ac",
-        }]
+        }
+    ]
 
     def run(self):
         self.upload_dependency("C:\\patchandgo.exe")

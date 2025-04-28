@@ -4,9 +4,11 @@
 
 from vmcloak.abstract import Dependency
 
+
 class ACPIShutdown(Dependency):
     """Tells Windows that to do if an ACPI shutdown signal (power button) is
     sent. These settings tell Windows to shut down."""
+
     name = "acpishutdown"
 
     def run(self):

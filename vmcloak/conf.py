@@ -11,6 +11,7 @@ from vmcloak.constants import VMCLOAK_ROOT
 log = logging.getLogger(__name__)
 HWCONF_PATH = os.path.join(VMCLOAK_ROOT, "data", "hwconf")
 
+
 def load_hwconf(profile, dirpath=HWCONF_PATH):
     ret = {}
 
@@ -21,8 +22,7 @@ def load_hwconf(profile, dirpath=HWCONF_PATH):
         files = os.listdir(dirpath)
 
         # Load local profiles.
-        local_hwconf = os.path.join(os.getenv("HOME"),
-                                    ".config", "vmcloak", "hwconf")
+        local_hwconf = os.path.join(os.getenv("HOME"), ".config", "vmcloak", "hwconf")
 
         if os.path.exists(local_hwconf):
             for fname in os.listdir(local_hwconf):
