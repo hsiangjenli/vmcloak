@@ -30,6 +30,7 @@ libvirt_os_variants = {
     "win10x64": "win7",
 }
 
+
 def virsh(*args, **kwargs):
     log.info("virsh %s", " ".join(args))
     if kwargs.get("check", False):
@@ -37,14 +38,16 @@ def virsh(*args, **kwargs):
     else:
         subprocess.call(VIRSH + list(args))
 
+
 def _create_image_disk(path, size):
     log.info("Creating disk %s with size %s", path, size)
     subprocess.check_call(["qemu-img", "create", "-f", "qcow2", path, size])
 
+
 def _create_snapshot_disk(image_path, path):
     log.info("Creating snapshot %s with master %s", path, image_path)
-    subprocess.check_call(["qemu-img", "create", "-f", "qcow2", "-b",
-                           image_path, path])
+    subprocess.check_call(["qemu-img", "create", "-f", "qcow2", "-b", image_path, path])
+
 
 def _create_vm(name, attr, iso_path=None, is_snapshot=False):
     log.info("Create VM instance for %s", name)
@@ -57,13 +60,21 @@ def _create_vm(name, attr, iso_path=None, is_snapshot=False):
             _create_image_disk(attr["path"], "%sG" % attr["hddsize"])
 
     net = attr["adapter"] or "default"
-    args = VIRT_INSTALL + ["--name", name,
-                           "--vcpus", "%s" % attr["cpus"],
-                           "--memory", "%s" % attr["ramsize"],
-                           "--disk", attr["path"],
-                           "--noautoconsole",
-                           "--os-variant", libvirt_os_variants[attr["osversion"]],
-                           "--network", "network=%s" % net]
+    args = VIRT_INSTALL + [
+        "--name",
+        name,
+        "--vcpus",
+        "%s" % attr["cpus"],
+        "--memory",
+        "%s" % attr["ramsize"],
+        "--disk",
+        attr["path"],
+        "--noautoconsole",
+        "--os-variant",
+        libvirt_os_variants[attr["osversion"]],
+        "--network",
+        "network=%s" % net,
+    ]
     if not iso_path:
         # Even if we don't have an ISO, we do want a CD-ROM drive
         args.extend(["--disk", "device=cdrom"])
@@ -76,13 +87,13 @@ def _create_vm(name, attr, iso_path=None, is_snapshot=False):
     if iso_path:
         # Install a new image
         # TODO: cannot use --transient here because virt-install will fail
-        args.extend(["--livecd", "--cdrom", iso_path,
-                     "--wait", "-1"])
+        args.extend(["--livecd", "--cdrom", iso_path, "--wait", "-1"])
     else:
         # Create a new (snapshot) VM
         args.append("--import")
     log.debug("Execute: %s", " ".join(args))
     subprocess.check_call(args)
+
 
 def _vm_state(name):
     try:
@@ -92,9 +103,11 @@ def _vm_state(name):
         return ""
     return state.rstrip().replace(" ", "")
 
+
 #
 # Platform API
 #
+
 
 def prepare_snapshot(name, attr):
     # Keep it in the root dir so libvirt doesn't create a storage
@@ -105,11 +118,13 @@ def prepare_snapshot(name, attr):
         return False
     return vms_path
 
+
 def create_new_image(name, _, iso_path, attr):
     if os.path.exists(attr["path"]):
         raise ValueError("Image %s already exists" % attr["path"])
 
     _create_vm(name, attr, iso_path=iso_path)
+
 
 def create_snapshot_vm(image, name, attr):
     if os.path.exists(attr["path"]):
@@ -117,14 +132,22 @@ def create_snapshot_vm(image, name, attr):
 
     _create_vm(name, attr, is_snapshot=True)
 
+
 def create_snapshot(name):
-    virsh("snapshot-create-as",
-          name,
-          "--name", "vmcloak",
-          "--description", "Snapshot created by VMCloak",
-          "--diskspec", "hda,snapshot=internal",
-          "--memspec", "file=,snapshot=internal",
-          "--halt")
+    virsh(
+        "snapshot-create-as",
+        name,
+        "--name",
+        "vmcloak",
+        "--description",
+        "Snapshot created by VMCloak",
+        "--diskspec",
+        "hda,snapshot=internal",
+        "--memspec",
+        "file=,snapshot=internal",
+        "--halt",
+    )
+
 
 def start_image_vm(image, user_attr=None):
     """Start transient VM"""
@@ -132,6 +155,7 @@ def start_image_vm(image, user_attr=None):
     if user_attr:
         attr.update(user_attr)
     _create_vm(image.name, attr)
+
 
 def remove_vm_data(name):
     """Remove VM definitions and snapshots but keep disk image intact"""
@@ -145,6 +169,7 @@ def remove_vm_data(name):
     if os.path.exists(path):
         os.remove(path)
 
+
 def wait_for_shutdown(name, timeout=None):
     while True:
         state = _vm_state(name)
@@ -155,34 +180,47 @@ def wait_for_shutdown(name, timeout=None):
         else:
             raise ValueError(state)
 
+
 def clone_disk(image, target):
     log.info("Cloning disk %s to %s", image.path, target)
-    subprocess.check_call(["qemu-img", "convert", "-f", "qcow2", image.path,
-                           target])
+    subprocess.check_call(["qemu-img", "convert", "-f", "qcow2", image.path, target])
+
 
 def export_vm(image, target):
     raise NotImplementedError
 
+
 def restore_snapshot(name, snap_name):
     virsh("restore", name, snap_name)
+
 
 def remove_hd(path):
     os.remove(path)
 
+
 def create_machineinfo_dump(name, image):
     pass
+
 
 #
 # Helper class for dependencies
 #
 
+
 class VM(Machinery):
     def attach_iso(self, iso_path):
-        virsh("attach-disk", self.name, iso_path, "hdb",
-              "--type", "cdrom",
-              "--mode", "readonly")
+        virsh(
+            "attach-disk",
+            self.name,
+            iso_path,
+            "hdb",
+            "--type",
+            "cdrom",
+            "--mode",
+            "readonly",
+        )
 
     def detach_iso(self):
-        virsh("attach-disk", self.name, "", "hdb",
-              "--type", "cdrom",
-              "--mode", "readonly")
+        virsh(
+            "attach-disk", self.name, "", "hdb", "--type", "cdrom", "--mode", "readonly"
+        )

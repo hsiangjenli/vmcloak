@@ -10,17 +10,14 @@ from vmcloak.exceptions import DependencyError
 
 log = logging.getLogger(__name__)
 
+
 class OptimizeOS(Dependency):
     name = "optimizeos"
     must_reboot = True
 
     optimize_scripts = {
-        "win10": Path(
-            Dependency.data_path, "win10", "scripts", "optimize.ps1"
-        ),
-        "win7": Path(
-            Dependency.data_path, "win7", "scripts", "optimize.ps1"
-        ),
+        "win10": Path(Dependency.data_path, "win10", "scripts", "optimize.ps1"),
+        "win7": Path(Dependency.data_path, "win7", "scripts", "optimize.ps1"),
     }
 
     def run(self):

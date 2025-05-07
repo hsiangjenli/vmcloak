@@ -4,20 +4,21 @@
 
 from vmcloak.abstract import Dependency
 
+
 class Edge(Dependency):
     name = "edge"
     tags = ["browser_edge"]
 
     def run(self):
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\Software\\"
+            'reg add "HKEY_LOCAL_MACHINE\\Software\\'
             "Microsoft\\Windows\\CurrentVersion\\"
-            "Policies\\System\" "
+            'Policies\\System" '
             "/v FilterAdministratorToken /t REG_DWORD /d 1 /f"
         )
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\Software\\"
+            'reg add "HKEY_LOCAL_MACHINE\\Software\\'
             "Microsoft\\Windows\\CurrentVersion\\"
-            "Policies\\System\\UIPI\" "
-            "/v \"\" /t REG_SZ /d \"1\" /f"
+            'Policies\\System\\UIPI" '
+            '/v "" /t REG_SZ /d "1" /f'
         )

@@ -13,9 +13,11 @@ os_types = {
     "win10x64": Windows10x64,
 }
 
+
 def network_interface(os_version):
     o = os_types[os_version]
     return o.nictype
+
 
 def get_os(os_version):
     h = os_types[os_version]

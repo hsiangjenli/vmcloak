@@ -7,9 +7,11 @@ import sys
 
 from vmcloak.paths import get_path
 
+
 @pytest.mark.skipif(sys.platform != "linux2", reason="Not Linux")
 def test_path1():
     assert get_path("vboxmanage") == "/usr/bin/VBoxManage"
+
 
 @pytest.mark.skipif(sys.platform != "Darwin", reason="Not Mac OS X")
 def test_path2():

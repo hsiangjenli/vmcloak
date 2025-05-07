@@ -11,8 +11,15 @@ from vmcloak.exceptions import DependencyError
 log = logging.getLogger(__name__)
 
 _depends = [
-    "kb:2670838", "kb:2639308", "kb:2533623", "kb:2731771", "kb:2729094",
-    "kb:2786081", "kb:2882822", "kb:2888049", "kb:2834140",
+    "kb:2670838",
+    "kb:2639308",
+    "kb:2533623",
+    "kb:2731771",
+    "kb:2729094",
+    "kb:2786081",
+    "kb:2882822",
+    "kb:2888049",
+    "kb:2834140",
 ]
 
 ie11settings_ps = """
@@ -100,35 +107,35 @@ reg add "HKEY_CURRENT_USER\Software\Microsoft\Internet Explorer\Main" /v "Enable
 reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Ext" /v "IgnoreFrameApprovalCheck" /t REG_DWORD /d 1 /f
 """
 
+
 class IE11(Dependency):
     name = "ie11"
     default = "11"
-    os_depends = {
-        "win7x64": _depends,
-        "win7x86": _depends,
-        "win10x64": "optimizeos"
-    }
+    os_depends = {"win7x64": _depends, "win7x86": _depends, "win10x64": "optimizeos"}
 
     tags = ["browser_internet_explorer"]
 
     no_exe = ["win10x64"]
-    exes = [{
-        "version": "11",
-        "target": "win7x64",
-        "urls": [
-            "https://download.microsoft.com/download/7/1/7/7179A150-F2D2-4502-9D70-4B59EA148EAA/IE11-Windows6.1-x64-en-us.exe",
-            "https://hatching.dev/hatchvm/IE11-Windows6.1-x64-en-us.exe",
-        ],
-        "sha1": "ddec9ddc256ffa7d97831af148f6cc45130c6857",
-    }, {
-        "version": "11",
-        "target": "win7x86",
-        "urls": [
-            "https://download.microsoft.com/download/9/2/F/92FC119C-3BCD-476C-B425-038A39625558/IE11-Windows6.1-x86-en-us.exe",
-            "https://hatching.dev/hatchvm/IE11-Windows6.1-x86-en-us.exe",
-        ],
-        "sha1": "fefdcdde83725e393d59f89bb5855686824d474e",
-    }]
+    exes = [
+        {
+            "version": "11",
+            "target": "win7x64",
+            "urls": [
+                "https://download.microsoft.com/download/7/1/7/7179A150-F2D2-4502-9D70-4B59EA148EAA/IE11-Windows6.1-x64-en-us.exe",
+                "https://hatching.dev/hatchvm/IE11-Windows6.1-x64-en-us.exe",
+            ],
+            "sha1": "ddec9ddc256ffa7d97831af148f6cc45130c6857",
+        },
+        {
+            "version": "11",
+            "target": "win7x86",
+            "urls": [
+                "https://download.microsoft.com/download/9/2/F/92FC119C-3BCD-476C-B425-038A39625558/IE11-Windows6.1-x86-en-us.exe",
+                "https://hatching.dev/hatchvm/IE11-Windows6.1-x86-en-us.exe",
+            ],
+            "sha1": "fefdcdde83725e393d59f89bb5855686824d474e",
+        },
+    ]
 
     def _run_once(self):
         # Run ie once so that settings/files/etc created on the first run

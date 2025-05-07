@@ -9,14 +9,17 @@ import tempfile
 from vmcloak.swarm import Swarm
 from vmcloak.exceptions import SwarmError
 
+
 def f(filename):
     return Swarm(os.path.join("tests", "files", "%s.swarm" % filename))
+
 
 def tmp(content):
     fd, filepath = tempfile.mkstemp()
     os.write(fd, content)
     os.close(fd)
     return filepath
+
 
 def test_invalid():
     with pytest.raises(SwarmError):
@@ -31,7 +34,8 @@ def test_invalid():
     with pytest.raises(SwarmError):
         Swarm(tmp("a: b")).load()
 
-    s = Swarm(tmp("""
+    s = Swarm(
+        tmp("""
 dep1:
   - 1.0
   - 2.0
@@ -58,7 +62,8 @@ vm1:
 
 matrix:
   - vm1
-"""))
+""")
+    )
     s.read_swarm()
     s.parse_matrix()
     assert s.machines == {
@@ -140,12 +145,14 @@ matrix:
         },
     }
 
-    s = Swarm(tmp("""
+    s = Swarm(
+        tmp("""
 matrix:
   winxp0:
     os: winxp
     count: 20
-"""))
+""")
+    )
     s.read_swarm()
     s.parse_matrix()
     assert s.machines == {

@@ -13,17 +13,37 @@ from vmcloak.repository import Session, Image
 
 log = logging.getLogger(__name__)
 
+
 class InstallError(Exception):
     pass
 
+
 _recipes = {
-    "win10x64": ["ie11", "dotnet:4.7.2", "vcredist:2013",
-                 "vcredist:2019", "edge", "carootcert", "adobepdf",
-                 "optimizeos", "disableservices"],
-    "win7x64": ["ie11", "dotnet:4.7.2", "java:7u80", "vcredist:2013",
-                 "vcredist:2019", "carootcert", "adobepdf", "wallpaper",
-                "optimizeos", "disableservices"]
+    "win10x64": [
+        "ie11",
+        "dotnet:4.7.2",
+        "vcredist:2013",
+        "vcredist:2019",
+        "edge",
+        "carootcert",
+        "adobepdf",
+        "optimizeos",
+        "disableservices",
+    ],
+    "win7x64": [
+        "ie11",
+        "dotnet:4.7.2",
+        "java:7u80",
+        "vcredist:2013",
+        "vcredist:2019",
+        "carootcert",
+        "adobepdf",
+        "wallpaper",
+        "optimizeos",
+        "disableservices",
+    ],
 }
+
 
 def find_recipe(osversion):
     os_recipe = _recipes.get(osversion)
@@ -34,12 +54,14 @@ def find_recipe(osversion):
 
     return os_recipe
 
+
 def _split_dep_version(dep):
     if ":" not in dep:
         return dep, None
 
     dependencency, version = dep.split(":", 1)
     return dependencency.strip(), version.strip()
+
 
 def parse_dependencies_list(dependencies):
     """Read all key=value settings and dependencies, and versions from the
@@ -74,6 +96,7 @@ def parse_dependencies_list(dependencies):
 
     return deps_versions, settings
 
+
 def _raise_for_non_existing(deps_versions):
     non_existing = set()
 
@@ -87,12 +110,13 @@ def _raise_for_non_existing(deps_versions):
             f"{', '.join(non_existing)}"
         )
 
+
 def _wait_for_agent(agent, timeout=1200):
     # wrap func just to change default argument.
     wait_for_agent(agent, timeout=timeout)
 
-class _Installable:
 
+class _Installable:
     def __init__(self, dependency_class, installer, class_args):
         self.dependency_class = dependency_class
         self.installer = installer
@@ -108,13 +132,12 @@ class _Installable:
     def do_install(self):
         try:
             self.dependency = self.dependency_class(
-               installer=self.installer, **self.class_args
+                installer=self.installer, **self.class_args
             )
             self.dependency.run()
         except DependencyError as e:
             raise InstallError(
-                f"Dependency '{self.dependency_class.name}' "
-                f"raised an error: {e}"
+                f"Dependency '{self.dependency_class.name}' raised an error: {e}"
             )
         # Catch base error of install until we catch/wrap exceptions in agent
         # and all other things used in run() calls.
@@ -126,14 +149,12 @@ class _Installable:
             )
 
         self.did_install = True
-        versions = self.installer.installed.setdefault(
-            self.dependency.name, []
-        )
+        versions = self.installer.installed.setdefault(self.dependency.name, [])
         if self.dependency.version:
             versions.append(self.dependency.version)
 
-class DependencyInstaller:
 
+class DependencyInstaller:
     def __init__(self, image, dependencies, attrs={}):
         self.image = image
         self.dependency_list = dependencies
@@ -169,9 +190,9 @@ class DependencyInstaller:
         for dep_dependency in depends_on:
             name, version = _split_dep_version(dep_dependency)
 
-            self._depending_deps.setdefault(
-                dependency_class.name, []
-            ).append((name, version))
+            self._depending_deps.setdefault(dependency_class.name, []).append(
+                (name, version)
+            )
 
             dep_dep_class = vmcloak.dependencies.names[name]
             self._discover_subdependencies(dep_dep_class)
@@ -276,7 +297,7 @@ class DependencyInstaller:
             log.debug(
                 f"'{depname}' has several dependencies of its own. "
                 f"Installing these first: "
-                f"{', '.join(f'{k}:{v}' for k,v in dep_deps)}"
+                f"{', '.join(f'{k}:{v}' for k, v in dep_deps)}"
             )
         for dep_dep, version in dep_deps:
             installable = self._do_install(dep_dep, version)
@@ -298,11 +319,14 @@ class DependencyInstaller:
         installable = _Installable(
             vmcloak.dependencies.names[depname],
             self,
-            class_args=dict(h=self.os_helper, m=self.machinery,
-                            a=self.agent,
-                            i=self.image,
-                            version=depversion,
-                            settings=self.deps_settings)
+            class_args=dict(
+                h=self.os_helper,
+                m=self.machinery,
+                a=self.agent,
+                i=self.image,
+                version=depversion,
+                settings=self.deps_settings,
+            ),
         )
         installable.do_install()
 
@@ -316,24 +340,21 @@ class DependencyInstaller:
         for dep, dep_version in self.install_queue:
             dep_count += 1
             try:
-                installable = self._do_install(
-                    dep, dep_version, skip_installed
-                )
+                installable = self._do_install(dep, dep_version, skip_installed)
             except InstallError as e:
-                log.error(
-                    f"Failed to install dependency '{dep}'. {e}"
-                )
+                log.error(f"Failed to install dependency '{dep}'. {e}")
                 has_fails = True
                 continue
 
             # Do a reboot is a dependency/change requires it. But only if
             # it is not the last one. If it is the last one, normal shutdown
             # will suffice.
-            if installable and installable.dependency_class.must_reboot and \
-                    len(self.install_queue) != dep_count:
-                log.debug(
-                    f"Rebooting machine as dependency '{dep}' requires it."
-                )
+            if (
+                installable
+                and installable.dependency_class.must_reboot
+                and len(self.install_queue) != dep_count
+            ):
+                log.debug(f"Rebooting machine as dependency '{dep}' requires it.")
                 self.do_reboot()
 
         log.info("No more dependencies to install")

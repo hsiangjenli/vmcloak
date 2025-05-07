@@ -6,16 +6,17 @@ import json
 
 import vmcloak.dependencies
 
-class MachineConfDump:
 
+class MachineConfDump:
     DEFAULT_NAME = "machineinfo.json"
 
     vmcloak_version = None
     machinery = None
     machinery_version = None
 
-    def __init__(self, name, ip, agent_port, os_name, os_version,
-                 architecture, tags=[], **kwargs):
+    def __init__(
+        self, name, ip, agent_port, os_name, os_version, architecture, tags=[], **kwargs
+    ):
         self.machine = {
             "name": name,
             "ip": ip,
@@ -23,7 +24,7 @@ class MachineConfDump:
             "os_name": os_name,
             "os_version": os_version,
             "architecture": architecture,
-            "tags": tags
+            "tags": tags,
         }
         self.machine.update(kwargs)
 
@@ -54,7 +55,7 @@ class MachineConfDump:
             "vmcloak_version": self.vmcloak_version,
             "machinery": self.machinery,
             "machinery_version": self.machinery_version,
-            "machine": self.machine
+            "machine": self.machine,
         }
         with open(path, "w") as fp:
             json.dump(dump, fp, indent=2)

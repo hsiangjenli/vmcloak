@@ -14,14 +14,12 @@ Set-Service wuauserv -StartupType Disabled
 Get-Service clr_optimization_v* | Set-Service -StartupType Disabled
 """
 
+
 class Finalize(Dependency):
     name = "finalize"
 
     def _finalize_windows(self):
-        log.debug(
-            "Disabling trustedinstaller, wuauserv, and clr optimization "
-            "services"
-        )
+        log.debug("Disabling trustedinstaller, wuauserv, and clr optimization services")
         self.run_powershell_strings(_finalize_windows_ps)
 
     def run(self):

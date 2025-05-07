@@ -7,50 +7,48 @@ from vmcloak.abstract import Dependency
 
 _win7depends = ["win7sp:sp1", "dotnet:4.6.1", "kb:2819745", "kb:3109118"]
 
+
 class PS1Logging(Dependency):
     name = "ps1logging"
     default = "3109118"
 
-    os_depends = {
-        "win7x64": _win7depends,
-        "win7x86": _win7depends
-    }
+    os_depends = {"win7x64": _win7depends, "win7x86": _win7depends}
 
     def run(self):
         # Set registry keys to enable PowerShell enchanced logging
 
         # Enable Module Logging for all modules
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\"
-            "Policies\\Microsoft\\Windows\\PowerShell\\ModuleLogging\" "
+            'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\'
+            'Policies\\Microsoft\\Windows\\PowerShell\\ModuleLogging" '
             "/v EnableModuleLogging /t REG_DWORD /d 00000001 /f /reg:64"
         )
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\"
-            "Policies\\Microsoft\\Windows\\PowerShell\\ModuleLogging\\ModuleNames\" "
+            'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\'
+            'Policies\\Microsoft\\Windows\\PowerShell\\ModuleLogging\\ModuleNames" '
             "/v * /t REG_SZ /d * /f /reg:64"
         )
 
         # Enable Script Block Logging
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\"
-            "Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging\" "
+            'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\'
+            'Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging" '
             "/v EnableScriptBlockLogging /t REG_DWORD /d 00000001 /f /reg:64"
         )
 
         # Enable Transcription and log to a central location
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\"
-            "Policies\\Microsoft\\Windows\\PowerShell\\Transcription\" "
+            'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\'
+            'Policies\\Microsoft\\Windows\\PowerShell\\Transcription" '
             "/v EnableTranscripting /t REG_DWORD /d 00000001 /f /reg:64"
         )
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\"
-            "Policies\\Microsoft\\Windows\\PowerShell\\Transcription\" "
-            "/v OutputDirectory /t REG_SZ /d \"C:\PSTranscipts\" /f /reg:64"
+            'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\'
+            'Policies\\Microsoft\\Windows\\PowerShell\\Transcription" '
+            '/v OutputDirectory /t REG_SZ /d "C:\PSTranscipts" /f /reg:64'
         )
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\"
-            "Policies\\Microsoft\\Windows\\PowerShell\\Transcription\" "
+            'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\'
+            'Policies\\Microsoft\\Windows\\PowerShell\\Transcription" '
             "/v EnableInvocationHeader /t REG_DWORD /d 00000001 /f /reg:64"
         )

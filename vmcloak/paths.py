@@ -31,6 +31,7 @@ INSTALL = {
     },
 }
 
+
 def get_path(app):
     """Returns the path to an application."""
     for path in PATHS[app]:
@@ -38,5 +39,4 @@ def get_path(app):
             return path
 
     log.error("No executable path found for %s!", app)
-    log.info("In order to install it, run %r",
-             INSTALL[app].get(os.uname()[0], "?"))
+    log.info("In order to install it, run %r", INSTALL[app].get(os.uname()[0], "?"))

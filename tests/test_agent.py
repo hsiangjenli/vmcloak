@@ -4,6 +4,7 @@
 
 from vmcloak.agent import Agent
 
+
 class TestAgent(object):
     def setup(self):
         self.a = Agent("localhost", 8000)

@@ -4,6 +4,7 @@
 
 from vmcloak.abstract import Dependency
 
+
 class DnsServer(Dependency):
     name = "dns"
 

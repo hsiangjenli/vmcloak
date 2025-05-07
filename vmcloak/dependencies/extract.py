@@ -9,6 +9,7 @@ from vmcloak.abstract import Dependency
 
 log = logging.getLogger(__name__)
 
+
 class Extract(Dependency):
     name = "extract"
 

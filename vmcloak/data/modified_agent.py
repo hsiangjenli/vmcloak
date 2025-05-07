@@ -28,6 +28,7 @@ ERROR_MESSAGE = ""
 ANALYZER_FOLDER = ""
 COMPLETION_KEY = ""
 
+
 class Agent:
     """Cuckoo agent, it runs inside guest."""
 
@@ -43,8 +44,14 @@ class Agent:
 
         if not ANALYZER_FOLDER:
             random.seed(time.time())
-            container = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(5, 10)))
-            COMPLETION_KEY = "".join(random.choice(string.ascii_lowercase) for x in range(random.randint(16, 20)))
+            container = "".join(
+                random.choice(string.ascii_lowercase)
+                for x in range(random.randint(5, 10))
+            )
+            COMPLETION_KEY = "".join(
+                random.choice(string.ascii_lowercase)
+                for x in range(random.randint(16, 20))
+            )
             if self.system == "windows":
                 system_drive = os.environ["SYSTEMDRIVE"] + os.sep
                 ANALYZER_FOLDER = os.path.join(system_drive, container)
@@ -88,8 +95,10 @@ class Agent:
         elif self.system == "linux" or self.system == "darwin":
             root = "/tmp"
         else:
-            ERROR_MESSAGE = "Unable to write malware to disk because of " \
-                            "failed identification of the operating system"
+            ERROR_MESSAGE = (
+                "Unable to write malware to disk because of "
+                "failed identification of the operating system"
+            )
             return False
 
         file_path = os.path.join(root, name)
@@ -177,8 +186,10 @@ class Agent:
             return False
 
         try:
-            proc = subprocess.Popen([sys.executable, self.analyzer_path],
-                                    cwd=os.path.dirname(self.analyzer_path))
+            proc = subprocess.Popen(
+                [sys.executable, self.analyzer_path],
+                cwd=os.path.dirname(self.analyzer_path),
+            )
             self.analyzer_pid = proc.pid
         except OSError as e:
             ERROR_MESSAGE = str(e)
@@ -212,8 +223,10 @@ class Agent:
 
         return True
 
+
 if __name__ == "__main__":
     from sys import argv
+
     if len(argv) > 1:
         BIND_IP = argv[1]
     if len(argv) > 2:

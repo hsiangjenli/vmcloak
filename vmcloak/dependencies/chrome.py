@@ -11,23 +11,27 @@ class Chrome(Dependency):
     name = "chrome"
     default = "46.0.2490.80"
     tags = ["browser_chrome"]
-    exes = [{
-        "version": "46.0.2490.80",
-        "url": "https://cuckoo.sh/vmcloak/googlechromestandaloneenterprise.msi",
-        "sha1": "a0ade494dda8911eeb68c9294c2dd0e3229d8f02",
-    }, {
-        "version": "latest",
-        "arch": "x86",
-        "urls": [
-            "https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise.msi"
-        ],
-    }, {
-        "version": "latest",
-        "arch": "amd64",
-        "urls": [
-            "https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi"
-        ],
-    }]
+    exes = [
+        {
+            "version": "46.0.2490.80",
+            "url": "https://cuckoo.sh/vmcloak/googlechromestandaloneenterprise.msi",
+            "sha1": "a0ade494dda8911eeb68c9294c2dd0e3229d8f02",
+        },
+        {
+            "version": "latest",
+            "arch": "x86",
+            "urls": [
+                "https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise.msi"
+            ],
+        },
+        {
+            "version": "latest",
+            "arch": "amd64",
+            "urls": [
+                "https://dl.google.com/edgedl/chrome/install/GoogleChromeStandaloneEnterprise64.msi"
+            ],
+        },
+    ]
 
     def run(self):
         self.upload_dependency("C:\\%s" % self.filename)
@@ -35,7 +39,7 @@ class Chrome(Dependency):
         # https://support.google.com/chrome/a/answer/6350036
         # this is not working properly :(
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Google\\Update\" "
+            'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Google\\Update" '
             "/v UpdateDefault /t REG_DWORD /d 0 /f"
         )
 
@@ -45,6 +49,6 @@ class Chrome(Dependency):
         # https://www.chromium.org/administrators/turning-off-auto-updates
         # this is not working properly :(
         self.a.execute(
-            "reg add \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Google\\Update\" "
+            'reg add "HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Google\\Update" '
             "/v AutoUpdateCheckPeriodMinutes /t REG_DWORD /d 0 /f"
         )

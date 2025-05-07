@@ -10,17 +10,14 @@ from vmcloak.exceptions import DependencyError
 
 log = logging.getLogger(__name__)
 
+
 class DisableServices(Dependency):
     name = "disableservices"
     must_reboot = True
 
     disable_scripts = {
-        "win10": Path(
-            Dependency.data_path, "win10", "scripts", "disableservices.ps1"
-        ),
-        "win7": Path(
-            Dependency.data_path, "win7", "scripts", "disableservices.ps1"
-        ),
+        "win10": Path(Dependency.data_path, "win10", "scripts", "disableservices.ps1"),
+        "win7": Path(Dependency.data_path, "win7", "scripts", "disableservices.ps1"),
     }
 
     def run(self):
