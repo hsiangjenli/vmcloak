@@ -22,13 +22,11 @@ _recipes = {
     "win10x64": [
         "ie11",
         "dotnet:4.7.2",
-        "java:7u80",
         "vcredist:2013",
         "vcredist:2019",
         "edge",
         "carootcert",
         "adobepdf",
-        "wallpaper",
         "optimizeos",
         "disableservices",
     ],
