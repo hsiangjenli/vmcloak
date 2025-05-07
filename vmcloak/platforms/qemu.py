@@ -59,7 +59,6 @@ def _make_pre_v41_args(attr):
         "-device", "usb-ehci,id=ehci",
         "-device", "usb-tablet,bus=ehci.0",
         "-device", "intel-hda",
-        "-device", "hda-duplex",
         "--enable-kvm"
     ]
 
@@ -84,7 +83,6 @@ def _make_post_v41_args(attr):
         "-device", "usb-ehci,id=ehci",
         "-device", "usb-tablet,bus=ehci.0",
         "-device", "intel-hda",
-        "-device", "hda-duplex",
         "-enable-kvm"
     ]
 
@@ -228,14 +226,12 @@ def create_snapshot(name):
     confdumps[name].add_machine_field("memory_snapshot", MEMORY_SNAPSHOT_NAME)
     # Stop the machine so the memory does not change while making the
     # memory snapshot.
-    m.stdin.write(b"stop\n")
-    m.stdin.write(b"migrate_set_speed 1G\n")
+    m.stdin.write("stop\n")
+    m.stdin.write("migrate_set_speed 1G\n")
     # Send the actual memory snapshot command. The args helper tries to find
     # lz4 of gzip binaries so we can compress the dump.
-    m.stdin.write(
-        f"migrate \"exec:{_get_exec_args(snapshot_path)}\"\n".encode()
-    )
-    m.stdin.write(b"quit\n")
+    m.stdin.write(f"migrate \"exec:{_get_exec_args(snapshot_path)}\"\n")
+    m.stdin.write("quit\n")
     log.debug("Flushing snapshot commands to qemu.")
     m.stdin.flush()
     m.wait()
@@ -331,7 +327,7 @@ class VM(Machinery):
                 "Cannot attach ISO to machine. Process handle not available."
             )
 
-        m.stdin.write(f"change cdrom {iso_path}\n".encode())
+        m.stdin.write(f"change cdrom {iso_path}\n")
         m.stdin.flush()
 
     def detach_iso(self):
@@ -340,5 +336,5 @@ class VM(Machinery):
             raise KeyError(
                 "Cannot attach ISO to machine. Process handle not available."
             )
-        m.stdin.write(b"eject cdrom\n")
+        m.stdin.write("eject cdrom\n")
         m.stdin.flush()
