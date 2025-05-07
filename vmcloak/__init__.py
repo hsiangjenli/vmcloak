@@ -3,3 +3,5 @@
 # See the file 'docs/LICENSE.txt' for copying permission.
 
 from . import agent, main, misc
+
+__version__ = "1.0.0"
