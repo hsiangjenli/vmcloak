@@ -88,3 +88,8 @@ exclude = [
 
 [tool.bandit]
 skips = ["B101"]
+
+[dependency-groups]
+dev = [
+    "radon>=6.0.1",
+]
