@@ -14,6 +14,7 @@ import sys
 import time
 import urllib.parse
 from configparser import ConfigParser
+import tqdm
 
 import requests
 
@@ -263,8 +264,10 @@ def download_file(url, filepath):
     try:
         with requests.get(url, headers=headers, stream=True) as resp:
             resp.raise_for_status()
+            total_size = int(resp.headers.get("Content-Length", 0))
+            chunk_size = 2 * 1024 * 1024
             with open(filepath, "wb") as fp:
-                for chunk in resp.iter_content(chunk_size=2 * 1024 * 1024):
+                for chunk in tqdm.tqdm(resp.iter_content(chunk_size=chunk_size), desc="Downloading", total=total_size):
                     written += fp.write(chunk)
                     sha1_hash.update(chunk)
     except requests.RequestException as e:
