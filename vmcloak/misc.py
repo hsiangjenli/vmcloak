@@ -5,6 +5,7 @@
 import hashlib
 import importlib
 import logging
+import math
 import os
 import shutil
 import socket
@@ -266,8 +267,9 @@ def download_file(url, filepath):
             resp.raise_for_status()
             total_size = int(resp.headers.get("Content-Length", 0))
             chunk_size = 2 * 1024 * 1024
+            total_chunks = math.ceil(total_size / chunk_size) if total_size else None
             with open(filepath, "wb") as fp:
-                for chunk in tqdm.tqdm(resp.iter_content(chunk_size=chunk_size), desc="Downloading", total=total_size):
+                for chunk in tqdm.tqdm(resp.iter_content(chunk_size=chunk_size), desc="Downloading", total=total_chunks):
                     written += fp.write(chunk)
                     sha1_hash.update(chunk)
     except requests.RequestException as e:
